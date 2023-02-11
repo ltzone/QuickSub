@@ -43,3 +43,12 @@ let rec string_of_typ t = match t with
 
 let print_typ t = print_string (string_of_typ t)
 
+
+
+let t1 = Rec (0, (Fun (Var 0, Nat))) (* μ a. a -> nat *)
+let t2 = Rec (0, (Fun (Var 0, Real))) (* μ a. a -> real *)
+
+let t3 = Rec (0, (Fun (Real, Var 0))) (* μ a. real -> a *)
+let t4 = Rec (0, (Fun (Nat, Var 0))) (* μ a. nat -> a *)
+
+let t1_unfold = Rec (0, (Fun (Rec (1, (Fun (Var 1, Nat))), Nat))) (* μ a. (μ b. b -> nat) -> nat *)
