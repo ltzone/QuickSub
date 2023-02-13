@@ -73,4 +73,7 @@ let rec subh (e:env) (m:mode) (x:typ) (y:typ) : (cmp * VSet.t) option =
         | Eq -> if VSet.mem i l then Some (Eq, VSet.remove i (VSet.union (fv a) l)) else Some (Eq, l))
   | _, _ -> None
     
-      
+let sub (x:typ) (y:typ) : bool =
+  match subh VMap.empty Pos x y with
+  | Some _ -> true
+  | _ -> false

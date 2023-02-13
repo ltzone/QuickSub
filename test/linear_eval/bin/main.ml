@@ -1,4 +1,5 @@
-open Linear_eval.Defs;;
-open Linear_eval.CompleteSub;;
+open Tests;;
 
-let () = print_endline (string_of_bool (sub t1 t1_unfold))
+
+let main = 
+  List.iter test1 [1;10;50;100;200;500;1000;2000;3000;4000;5000;6000;7000;8000;9000;10000]
