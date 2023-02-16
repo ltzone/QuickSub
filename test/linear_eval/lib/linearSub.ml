@@ -35,6 +35,7 @@ let rec fv (t:typ) =
   | Sum (a, b) -> VSet.union (fv a) (fv b)
   | Var i -> VSet.singleton i
   | Rec (i, a) -> VSet.remove i (fv a)
+  | Top -> VSet.empty
 
 
 
@@ -43,6 +44,7 @@ let rec subh (e:env) (m:mode) (x:typ) (y:typ) : (cmp * VSet.t) option =
   | (Nat, Nat) -> Some (Eq, VSet.empty)
   | (Real, Real) -> Some (Eq, VSet.empty)
   | (Nat, Real) -> Some (Lt, VSet.empty)
+  | (a, Top) -> if a != Top then Some (Lt, VSet.empty) else Some (Eq, VSet.empty)
   | (Fun (a1, a2), Fun (b1, b2)) ->
     Option.bind (subh e (flip_mode m) b1 a1) (fun (c1, l1) ->
       Option.bind (subh e m a2 b2) (fun (c2, l2) ->

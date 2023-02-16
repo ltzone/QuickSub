@@ -10,6 +10,7 @@
 
 type typ = Nat | Real | Prod of typ * typ | Sum of typ * typ 
          | Fun of typ * typ | Rec of int * typ | Var of int
+         | Top
 
 
 let rec numVars (t: typ) = match t with 
@@ -52,6 +53,7 @@ let rec string_of_typ t = match t with
   | Fun (t1, t2) -> "(" ^ string_of_typ t1 ^ " -> " ^ string_of_typ t2 ^ ")"
   | Rec (i, t) -> "(μ " ^ ascii i ^ ". " ^ string_of_typ t ^ ")"
   | Var i -> ascii i
+  | Top -> "T"
 
 let print_typ t = print_string (string_of_typ t)
 

@@ -33,6 +33,7 @@ let rec init (t:typ)
       Array.set u n (isUninhabited (init t ut u true) u);
       if b then () else Array.set ut n (init t ut u false);
       CEVar n
+  | Top -> failwith "the completeness algorithm does not allow Top"
 
 let sub (t1: typ) (t2: typ) =
   let m = numVars t1 in
