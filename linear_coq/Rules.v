@@ -46,7 +46,7 @@ Inductive type : typ -> Prop :=
 .
 
 
-Hint Constructors type : core.
+#[global] Hint Constructors type : core.
 
 
 Fixpoint subst_tt (Z : atom) (U : typ) (T : typ) {struct T} : typ :=
@@ -70,47 +70,63 @@ Fixpoint fv_tt (T : typ) {struct T} : atoms :=
   end.
 
 
+Inductive IsoMode := Neg | Pos.
+
+Inductive CmpMode := Lt | Eq.
+
+
 Inductive binding : Set :=
-  | bind_sub : binding
+  | bind_sub : IsoMode -> binding
   | bind_typ : typ -> binding.
 
 Definition env := list (atom * binding).
+Definition emp := Metatheory.empty.
 Notation empty := (@nil (atom * binding)).
-
-Fixpoint unfoldT (A : typ) X (n : nat) :=
-  match n with
-  | 0 => open_tt A (typ_fvar X)
-  | (S i) => open_tt A (unfoldT A X i)
-  end.
 
 Inductive WFS : env -> typ -> Prop :=
 | WFS_top : forall E, WFS E typ_top
 | WFS_nat : forall E, WFS E typ_nat
-| WFS_fvar : forall X E,
-    binds X bind_sub E ->
+| WFS_fvar : forall X E im,
+    binds X (bind_sub im) E ->
     WFS E (typ_fvar X)
 | WFS_arrow : forall E A B,
     WFS E A ->
     WFS E B ->
     WFS E (typ_arrow A B)
-| WFS_rec : forall L E A,
-      (forall n X, X \notin L -> 
-        WFS (X ~ bind_sub ++ E) (unfoldT A X n)) ->
+| WFS_rec : forall L E A im,
+    (* (forall X , X \notin L -> forall im, 
+        WFS (X ~ bind_sub im ++ E) (open_tt A (typ_rcd X (open_tt A X)))) -> *)
+      (forall  X , X \notin L -> 
+        WFS (X ~ bind_sub im ++ E) (open_tt A X)) ->
       WFS E (typ_mu A).
+
 
 Inductive wf_env : env -> Prop :=
   | wf_env_empty :
       wf_env empty
-  | wf_env_sub : forall (E : env) (X : atom),
+  | wf_env_sub : forall (E : env) (X : atom) im,
       wf_env E ->
       X \notin dom E ->
-      wf_env (X ~ bind_sub ++ E)
+      wf_env (X ~ bind_sub im ++ E)
   | wf_env_typ : forall (E : env) (x : atom) (T : typ),
       wf_env E ->
       WFS E T ->
       x `notin` dom E ->
       wf_env (x ~ bind_typ T ++ E).
 
+Definition flip_im (im : IsoMode) : IsoMode :=
+  match im with
+    | Neg => Pos
+    | Pos => Neg
+  end.
+
+Definition compose_cm (cm1 cm2 : CmpMode) (evs1 evs2 : atoms ) : option (CmpMode) :=
+  match cm1, cm2 with
+    | Lt, Lt => Some Lt
+    | Eq, Lt => if AtomSetImpl.is_empty evs1 then Some Lt else None
+    | Lt, Eq => if AtomSetImpl.is_empty evs2 then Some Lt else None
+    | Eq, Eq => Some Eq
+  end.
 
 Inductive exp : Set :=
   | exp_bvar : nat -> exp
@@ -182,27 +198,73 @@ Inductive expr : exp -> Prop :=
      expr e ->
      expr (exp_fold T e).          
      
-Inductive Sub : env -> typ -> typ -> Prop :=
-| SA_nat: forall E,
+
+(*
+IsoMode := + | -
+E [IsoMode] |- T1 [CmpMode] T2
+*)
+Inductive Sub : IsoMode -> CmpMode -> atoms -> env -> typ -> typ -> Prop :=
+(* 
+|- E
+----------------
+E [_]|- nat <:= nat 
+*)
+| Sa_nat: forall E im,
     wf_env E ->
-    Sub E typ_nat typ_nat
-| SA_fvar: forall E X,
+    Sub im Eq emp E typ_nat typ_nat
+(*
+|- E
+----------------
+E [=] |- top <:= top
+*)
+| Sa_top_eq: forall E im,
     wf_env E ->
-    binds X bind_sub E ->
-    Sub E (typ_fvar X) (typ_fvar X)
-| SA_top : forall E A,
-    wf_env E ->
-    WFS E A -> 
-    Sub E A typ_top
-| SA_arrow: forall E A1 A2 B1 B2,
-    Sub E B1 A1 ->
-    Sub E A2 B2 ->
-    Sub E (typ_arrow A1 A2) (typ_arrow B1 B2)
-| SA_rec: forall L A1 A2 E,
-    (forall n X,
-        X \notin L ->
-        Sub ((X ~ bind_sub) ++ E)  (unfoldT A1 X n) (unfoldT A2 X n)) ->
-    Sub E (typ_mu A1) (typ_mu A2).
+    Sub im Eq emp E typ_top typ_top  
+(*
+TODO: is != top necessary?, if we are going to interpret <: as no greater than
+|- E, A != top
+----------------
+E [<] |- A <:= top
+*)
+| Sa_top_lt: forall E im A,
+    wf_env E -> WFS E A -> A <> typ_top ->
+    Sub im Lt emp E A typ_top
+| Sa_fvar_pos: forall E X im,
+    wf_env E -> binds X (bind_sub im) E ->
+    Sub im Eq emp E (typ_fvar X) (typ_fvar X)
+| Sa_fvar_neg: forall E X im,
+    wf_env E -> binds X (bind_sub (flip_im im)) E ->
+    Sub im Eq (singleton X) E (typ_fvar X) (typ_fvar X)
+| Sa_arrow: forall E A1 A2 B1 B2 cm1 cm2 evs1 evs2 cm im,
+    Sub (flip_im im) cm1 evs1 E B1 A1 ->
+    Sub im cm2 evs2 E A2 B2 ->
+    compose_cm cm1 cm2 evs1 evs2 = Some cm ->
+    Sub im cm (evs1 `union` evs2) E (typ_arrow A1 A2) (typ_arrow B1 B2)
+| Sa_rec_lt: forall L A1 A2 evs E im,
+    (forall X,  X \notin L -> 
+        Sub im Lt evs (X ~ bind_sub im ++ E) (open_tt A1 X) (open_tt A2 X)) ->
+        (* implicitly indicates that X cannot be in the weak-positive set of  E,x |-  A1 <: A2 *)
+    Sub im Lt evs E (typ_mu A1) (typ_mu A2)
+| Sa_rec_eq_notin: forall L A1 A2 evs E im,
+    (forall X,  X \notin L -> 
+        Sub im Eq evs (X ~ bind_sub im ++ E) (open_tt A1 X) (open_tt A2 X)) ->
+    Sub im Eq evs E (typ_mu A1) (typ_mu A2)
+(* | Sa_rec_eq_in: forall L A1 A2 evs E im,
+    (forall X,  X \notin L -> 
+      exists evs', (evs `union` {{X}}) [=] evs' /\
+        Sub im Eq evs' (X ~ bind_sub im ++ E) (open_tt A1 X) (open_tt A2 X)) ->
+    Sub im Eq (evs `union` fv_tt A1) E (typ_mu A1) (typ_mu A2) *)
+| Sa_rec_eq_in: forall L A1 A2 evs E im,
+    (forall X,  X \notin L -> 
+        Sub im Eq (add X evs) (X ~ bind_sub im ++ E) (open_tt A1 X) (open_tt A2 X)) ->
+    Sub im Eq (evs `union` fv_tt A1) E (typ_mu A1) (typ_mu A2)
+| Sa_evs_proper: forall im cm evs evs' E A1 A2,
+    Sub im cm evs E A1 A2 ->
+    evs [=] evs' ->
+    Sub im cm evs' E A1 A2
+.
+
+#[global] Hint Constructors Sub wf_env WFS : core.
 
 Inductive typing : env -> exp -> typ -> Prop :=
 | typing_nat: forall G,
@@ -228,7 +290,7 @@ Inductive typing : env -> exp -> typ -> Prop :=
      typing G (exp_unfold (typ_mu T) e)  (open_tt T  (typ_mu T))
  | typing_sub: forall G T e S ,
      typing G e S ->
-     Sub G S T ->
+     Sub Pos Lt emp G S T ->
      typing G e T.
 
 Inductive value : exp -> Prop :=
@@ -278,96 +340,4 @@ Ltac gather_atoms ::=
   let F := gather_atoms_with (fun x : env => dom x) in
   constr:(A `union` B `union`  E \u C \u D \u F).
 
-Inductive WFA : env -> typ -> Prop :=
-| WFA_top : forall E, WFA E typ_top
-| WFA_nat : forall E, WFA E typ_nat
-| WFA_fvar : forall X E,
-    binds X bind_sub E ->
-    WFA E (typ_fvar X)
-| WFA_arrow : forall E A B,
-    WFA E A ->
-    WFA E B ->
-    WFA E (typ_arrow A B)
-| WFA_rec : forall L E A,
-      (forall X, X \notin L -> 
-                 WFA (X ~ bind_sub ++ E) (open_tt A X)) ->
-      WFA E (typ_mu A).
-
-Inductive WF : env -> typ -> Prop :=
-| WF_top : forall E, WF E typ_top
-| WF_nat : forall E, WF E typ_nat
-| WF_fvar : forall X E,
-    binds X bind_sub E ->
-    WF E (typ_fvar X)
-| WF_arrow : forall E A B,
-    WF E A ->
-    WF E B ->
-    WF E (typ_arrow A B)
-| WF_rec : forall L E A,
-      (forall X, X \notin L -> 
-                 WF (X ~ bind_sub ++ E) (open_tt A X)) ->
-      (forall X, X \notin L -> 
-                 WF (X ~ bind_sub ++ E) (open_tt A (open_tt A X))) ->
-      WF E (typ_mu A).
-
-Inductive sub : env -> typ -> typ -> Prop :=
-| sa_nat: forall E,
-    wf_env E ->
-    sub E typ_nat typ_nat
-| sa_fvar: forall E X,
-    wf_env E ->
-    binds X bind_sub E -> 
-    sub E (typ_fvar X) (typ_fvar X)
-| sa_top : forall E A,
-    wf_env E ->
-    WF E A -> 
-    sub E A typ_top
-| sa_arrow: forall E A1 A2 B1 B2,
-    sub E B1 A1 ->
-    sub E A2 B2 ->
-    sub E (typ_arrow A1 A2) (typ_arrow B1 B2)
-| sa_rec: forall L A1 A2 E,
-    (forall X,
-        X \notin L ->
-        sub (X ~ bind_sub ++ E) (open_tt A1 X) (open_tt A2 X)) ->
-    (forall X,
-        X \notin L ->
-        sub (X ~ bind_sub ++ E) (open_tt A1 (open_tt A1 X)) (open_tt A2 (open_tt A2 X))) ->
-    sub E (typ_mu A1) (typ_mu A2).
-
-Inductive Mode := Neg | Pos.
-
-Definition flip (m : Mode) : Mode :=
-  match m with
-  | Neg => Pos
-  | Pos => Neg
-  end.
-
-
-Hint Constructors Sub WFS typing step value expr wf_env sub WF WFA: core.
-
-
-Fixpoint UnfoldS n X A :=
-  match n with
-  | 0   => A
-  | S i => subst_tt X (UnfoldS i X A) A
-  end.
-
-Definition chooseD(n : nat) (m : Mode) X (C : typ) (D : typ) :=
-  match m with
-  | Pos => subst_tt X (subst_tt X (UnfoldS n X C) C)
-  | Neg => subst_tt X (subst_tt X (UnfoldS n X D) D)
-  end.
-
-Definition chooseS (m : Mode) X (C : typ) (D : typ) :=
-  match m with
-  | Pos => subst_tt X C
-  | Neg => subst_tt X D
-  end.
-
-(* definition 1 *)
-Fixpoint def1 (X: atom) (A: typ) (n:nat): typ :=
-  match n with
-  | 0 => A
-  | S n1 => subst_tt X (def1 X A n1) A
-  end.
+#[global] Hint Constructors Sub WFS typing step value expr wf_env: core.
