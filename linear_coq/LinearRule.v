@@ -653,10 +653,66 @@ Lemma generalized_unfolding_lemma:
 *)
 
 
+
+(* 
+Try global invariant:
+*)
+
+
+Inductive posvar: IsoMode -> atom -> typ -> typ -> Prop :=
+| pos_nat: forall X m,
+    posvar m X typ_nat typ_nat
+| pos_top: forall X A m,
+    type A ->
+    posvar m X A typ_top
+| pos_top_flip: forall X A m,
+    type A ->
+    posvar m X typ_top A
+| pos_fvar_x: forall X,
+    posvar Pos X (typ_fvar X) (typ_fvar X)
+| pos_fvar_y: forall X Y m,
+    X <> Y ->
+    posvar m X (typ_fvar Y) (typ_fvar Y)
+| pos_arrow: forall X m A1 A2 B1 B2,
+    posvar (flip_im m) X B1 A1 ->
+    posvar m X A2 B2 ->
+    posvar m X (typ_arrow A1 A2) (typ_arrow B1 B2)
+| pos_rec: forall X m A B L,
+    (forall Y, Y \notin L \u {{X}} ->
+               posvar m X (open_tt A Y) (open_tt B Y)) ->
+     (forall Y, Y \notin L \u {{X}} ->
+               posvar Pos Y (open_tt A Y) (open_tt B Y)) -> 
+    posvar m X (typ_mu A) (typ_mu B)
+| pos_rec_t : forall A X m L,
+    X \notin fv_tt A ->
+    (forall Y, Y \notin L \u {{X}} ->
+               type (open_tt A Y)) ->
+    posvar m X (typ_mu A) (typ_mu A).
+
+
+Definition well_bind_env im (E:env) (A B : typ) :=
+  (forall X, 
+    (binds X (bind_sub im) E -> posvar Pos  X A B) /\
+    (binds X (bind_sub (flip_im im)) E -> posvar Neg X A B)).
+
+Lemma well_bind_env_fvar_x: forall E X im im_x,
+    well_bind_env im E (typ_fvar X) (typ_fvar X) ->    
+    binds X (bind_sub im_x) E ->
+    im = im_x.
+Proof with auto.
+  intros. hnf in H. specialize (H X). destruct H as [H1 H2].
+  destruct im, im_x...
+  - specialize (H2 H0). inversion H2;subst. exfalso...
+  - specialize (H2 H0). inversion H2;subst. exfalso...
+Qed.
+
+
+
 Lemma generalized_unfolding_lemma:
   forall E1 E2 C D A B X im im_x evs cm,
     wf_env (E1 ++ E2) -> X \notin fv_tt C \u fv_tt D \u dom (E1 ++ E2) ->
     Sub im cm evs (E1 ++ X ~ bind_sub im_x ++ E2) A B ->
+    well_bind_env im (E1 ++ X ~ bind_sub im_x ++ E2) A B ->
     forall cm' evs',
     Sub im_x cm' evs' E2 (typ_mu (mode_choose im im_x C D)) (typ_mu (mode_choose im im_x D C)) ->
     exists cm'' evs'', (Sub im cm'' evs'' (E1 ++ E2) (subst_tt X (typ_mu C) A) (subst_tt X (typ_mu D) B)).
@@ -685,7 +741,7 @@ Proof with auto.
     +
       (* X0 == X *)
       subst. analyze_binds_uniq H0. inversion BindsTacVal;subst.
-      exists cm', evs'. destruct im_x;simpl in H3...
+      exists cm', evs'. destruct im_x;simpl in H4...
       admit. admit. (* weakening *)
     +
       (* X0 != X *)
@@ -698,73 +754,119 @@ Proof with auto.
     simpl. destruct (X0 == X)...
     +
       (* X0 == X *)
-      subst. analyze_binds_uniq H0. destruct im, im_x;inversion BindsTacVal;simpl in H3. inversion BindsTacVal;subst.
-      exists cm', evs'. destruct im_x;simpl in H3...
-      admit. admit. (* weakening *)
+      subst. analyze_binds_uniq H0.
+      apply well_bind_env_fvar_x with (im_x:=im_x) in H2...
+      subst... destruct im_x;inversion BindsTacVal.
+      (* contradiction on the global invariant *)
     +
       (* X0 != X *)
       destruct im.
-      * exists Eq, emp. apply Sa_fvar_pos... analyze_binds_uniq H0...
-      * exists Eq, emp. apply Sa_fvar_pos... analyze_binds_uniq H0...
-      (* weird? *)
-
+      * exists Eq, {{ X0}} . apply Sa_fvar_neg... analyze_binds_uniq H0...
+      * exists Eq, {{ X0 }}. apply Sa_fvar_neg... analyze_binds_uniq H0...
 
   -
     (* arrow *)
-    simpl. destruct cm1, cm2;simpl in H1.
-    +
-      apply Sa_arrow with (cm1:=Lt) (cm2:=Lt)...
-      { apply IHSub1 with (im_x0:=im_x) (evs':=evs') (cm':=cm')...
-        destruct im, im_x;simpl in H2;simpl... }
-      { apply IHSub2 with (im_x0:=im_x) (evs':=evs') (cm':=cm')... }
-    +
-      simpl in H0.
-      apply Sa_arrow with (cm1:=Lt) (cm2:=Eq)... 
-      { apply IHSub1 with (im_x0:=im_x) (evs':=evs') (cm':=cm')...
-        destruct im, im_x;simpl in H2;simpl... }
-      { apply Msub_eq_sem in H1_0. subst. apply Msub_refl...
-    (* 
-   
-    TODO: 
-    1) add the second conclusion: flip im ~ subst D and C
-    2) case analysis on cm1 cm2
+    simpl. 
+    
+    destruct (IHSub1) with (im_x0:=im_x) (evs':=evs') (cm':=cm') (X0:=X) (E3:=E2) (E4:=E1) (D:=C) (C:=D) as [cm1' [evs1' IHSub1']] ...
+    { hnf in H2. hnf. intros. split;intros.
+      + specialize (H2 X0). destruct H2.
+        specialize (H5 H4). inversion H5;subst...
+      + specialize (H2 X0). destruct H2.
+        destruct im; specialize (H2 H4); inversion H2;subst... }
+    { destruct im, im_x;simpl in H2;simpl... }
+    destruct (IHSub2) with (im_x0:=im_x) (evs':=evs') (cm':=cm') (X0:=X) (E3:=E2) (E4:=E1) (D:=D) (C:=C) as [cm2' [evs2' IHSub2']]...
+    { hnf in H2. hnf. intros. split;intros.
+      + specialize (H2 X0). destruct H2.
+        specialize (H2 H4). inversion H2;subst...
+      + specialize (H2 X0). destruct H2.
+        destruct im; specialize (H5 H4); inversion H5;subst... }
 
-    *)
-
-    admit. admit. admit.
+      
+    destruct ((compose_cm cm1' cm2' evs1' evs2')) eqn:Ecomp.
+    2:{ admit. (* TO check: if the cm are synced? *) }
+    exists c, (union evs1' evs2').
+    apply Sa_arrow with (cm1:=cm1') (cm2:=cm2')...
   
   -
-    (* mu *)
-    simpl. apply Sa_rec_lt with (L:=L \u fv_tt C \u fv_tt D \u fv_tt A1 \u fv_tt A2 \u {{X}}).
-    intros. specialize_x_and_L X0 L.
-    rewrite subst_tt_open_tt_var...
-    2:{ admit. }
-    rewrite subst_tt_open_tt_var...
-    2:{ admit. }
-    rewrite <- app_assoc.
-    apply H2... admit.
+    (* rec-lt *)
+    simpl.
+    pick_fresh X'.
+    specialize_x_and_L X' L.
+    destruct (H0 im_x X E2 (X' ~ bind_sub im ++ E1)) with (cm' := cm') (evs' := evs') (C:=C) (D:=D) as [cm1' [evs1' IHSub1']]...
+    { constructor... }
+    { hnf. intros. specialize (H2 X0). destruct H2.
+      split;intros.
+      - inversion H6;subst...
+        + (* apply soundness_posvar *) admit.
+        + apply H2 in H7. 
+         (* inversion H7;subst... *) 
+          (* { destruct H3 with (X:=X0)...
+            pick_fresh Y. specialize_x_and_L Y (union L0 (singleton X0)).
+            rewrite subst_tt_intro with (X:=Y) (T2:=A)...
+            rewrite subst_tt_intro with (X:=Y) (T2:=B)...
+            apply pos_rename_fix... }
+          { apply posvar_self_notin...
+            { pick_fresh Z. specialize_x_and_L Z (union L0 {{X0}})...
+              rewrite subst_tt_intro with (X:=Z)...
+              apply subst_tt_type... }
+            { apply notin_fv_tt_open_aux... }
+          } *) admit.
+    
+    }
+    rewrite <- subst_tt_open_tt_var in IHSub1'... 2:{ admit. }
+    rewrite <- subst_tt_open_tt_var with (P:=(typ_mu D)) in IHSub1'... 2:{ admit. }
+    destruct cm1'. 2:{ (* TODO: contradiction on Lt/Eq 
+    
+    !!!! may relies on syntactic equality??
+    
+    *) admit. }
+    { exists Lt, evs1'. apply Sa_rec_lt with (L:= L \u {{X}} \u {{X' }}).
+      intros.  
+      replace evs1' with (if AtomSetImpl.mem X' evs1' then AtomSetImpl.add X0 (remove X' evs1') else evs1')...
+      2:{ destruct (AtomSetImpl.mem X' evs1') eqn:Eevs...
+          apply mem_iff in Eevs.
+          (* pose proof posvar_false _ _ _ _ _ _ IH1 X Eevs. *)
+          admit. }
+      (* apply sub_replacing_var... *)
+      admit.
+    }
+    
   -
-     (* proper *)
-     apply Sa_evs_proper with (evs:=evs)...
+    (* rec-eq *)
+    admit.
+  -
+    (* rec-eq-notin *)
+    admit.
+  -
+    (* proper *)
+    destruct (IHSub im_x X E2 E1) with (cm':=cm') (evs':=evs'0) (C:=C) (D:=D) as [cm1' [evs1' IHSub1']]...
+    exists cm1', evs1'...
+
 Admitted.
 
 Lemma unfolding_lemma :
-  forall E A B evs,
-    Sub Pos Lt evs E (typ_mu A) (typ_mu B) ->
-    Sub Pos Lt evs E (open_tt A (typ_mu A)) (open_tt B (typ_mu B)).
+  forall A B evs,
+    Sub Pos Lt evs nil (typ_mu A) (typ_mu B) ->
+    exists evs', Sub Pos Lt evs' nil (open_tt A (typ_mu A)) (open_tt B (typ_mu B)).
 Proof with auto.
   intros.
   assert (Hq:=H).
-  dependent induction H.
-  +
-    pick fresh X. specialize_x_and_L X L.
-    rewrite_alist (nil ++ E).
-    rewrite subst_tt_intro with (X:=X)...
-    rewrite subst_tt_intro with (X:=X) (T2:=B)...
-    subst.
-    apply sub_regular in Hq.
-    destruct_hypos.
-    apply generalized_unfolding_lemma...
-  +
-    apply Sa_evs_proper with (evs:=evs)...
-Qed.
+  replace empty with (empty ++ empty)...
+  dependent induction H;subst...
+  { clear H0. specialize_x_and_L X L.
+    pick_fresh X. specialize_x_and_L X L.
+    destruct (generalized_unfolding_lemma
+      nil nil A B (open_tt A X) (open_tt B X) X Pos Pos evs Lt
+    ) with (cm':=Lt) (evs':=evs)...
+    { hnf. intros. split;intro.
+      + analyze_binds H0. admit.
+      + analyze_binds H0. }
+    destruct H0 as [evs' ?].
+    exists evs'. 
+    rewrite <- subst_tt_intro in H0...
+    rewrite <- subst_tt_intro in H0...
+    destruct x...
+    (* needs to reason about Lt/Eq *) admit.
+  }
+Admitted.
