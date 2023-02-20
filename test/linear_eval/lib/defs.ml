@@ -93,3 +93,11 @@ let deep_subtyp_pos_gen (depth: int) b1 b2 =
   let t1 = typ_genh 0 depth b1 in
   let t2 = typ_genh 0 depth b2 in
   (t1, t2)
+
+let deep_subtyp_pos_mul_gen (depth: int) b1 b2 =
+  let rec typ_genh max_var dep base cont = 
+    if dep = 0 then cont else
+      Rec (max_var, Fun (base, typ_genh (max_var + 1) (dep - 1) base (Sum (Var max_var, cont)))) in
+  let t1 = typ_genh 0 depth b1 Nat in
+  let t2 = typ_genh 0 depth b2 Nat in
+  (t1, t2)

@@ -39,3 +39,12 @@ let test2 (n:int) =
 let test3 (n:int) = 
   let t1, t2 = deep_subtyp_pos_gen n Real Nat in
   test_wrapper n t1 t2
+
+let test4 (n:int) = 
+  let t1, t2 = deep_subtyp_pos_mul_gen n Nat Real in
+  test_wrapper n t1 t2
+
+
+let test5 (n:int) = 
+  let t1, t2 = deep_subtyp_pos_mul_gen n Real Nat in
+  test_wrapper n t1 t2
