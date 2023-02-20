@@ -707,7 +707,6 @@ Proof with auto.
 Qed.
 
 
-
 Lemma generalized_unfolding_lemma:
   forall E1 E2 C D A B X im im_x evs cm,
     wf_env (E1 ++ E2) -> X \notin fv_tt C \u fv_tt D \u dom (E1 ++ E2) ->
@@ -784,7 +783,40 @@ Proof with auto.
 
       
     destruct ((compose_cm cm1' cm2' evs1' evs2')) eqn:Ecomp.
-    2:{ admit. (* TO check: if the cm are synced? *) }
+    2:{
+      destruct cm1', cm2';inversion Ecomp.
+      + destruct (AtomSetImpl.is_empty evs2') eqn:Eevs2'; try solve [inversion H5].
+
+      Search subst_tt eq.
+        (* idea: 
+         Sub im Eq evs2' (E1 ++ E2) (subst_tt X (typ_mu C) A2) (subst_tt X (typ_mu D) B2)
+         => A2 = B2
+         => cm2 = Eq
+
+         (1) im_x = im,  X is weak positive in ...
+             X is not in fv(C) or fv(D)
+             A2[X:=mu a. C] produces some evs
+             A2[X:=X] produces some evs?
+
+
+             one possible fix: C D produces empty set
+
+
+
+
+         (2) im_x != im, X is weak negative in ...
+
+
+
+         => evs2 = emp ??
+        
+        
+        *)
+
+      
+    
+    
+    admit. (* TO check: if the cm are synced? *) }
     exists c, (union evs1' evs2').
     apply Sa_arrow with (cm1:=cm1') (cm2:=cm2')...
   
