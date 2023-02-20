@@ -602,22 +602,127 @@ Proof with auto.
   - apply AtomSetImpl.choose_2 in E... congruence.
 Qed.
 
-Lemma generalized_unfolding_lemma:
-  forall E1 E2 C D A B X im evs,
+Definition mode_choose {A:Type} im im_x (C D:A) := 
+  match im, im_x with
+  | Pos, Pos => C
+  | Pos, Neg => D
+  | Neg, Pos => D
+  | Neg, Neg => C
+  end.  
+
+
+(* Lemma generalized_unfolding_lemma:
+
+only LT: cannot deal with
+
+A2 = A1 , B1 <: B2
+-----------------
+[X -> mu. C ] A1 -> B1 <: [X -> mu. D ] A2 -> B2
+
+  forall E1 E2 C D A B X im im_x evs,
     wf_env (E1 ++ E2) -> X \notin fv_tt C \u fv_tt D \u dom (E1 ++ E2) ->
-    Sub im Lt evs (E1 ++ X ~ bind_sub im ++ E2) A B ->
-    Sub im Lt evs (E1 ++ E2) (subst_tt X (typ_mu C) A) (subst_tt X (typ_mu D) B).
+    Sub im Lt evs (E1 ++ X ~ bind_sub im_x ++ E2) A B ->
+    forall cm' evs',
+    Sub Pos cm' evs' E2 (typ_mu (mode_choose im im_x C D)) (typ_mu (mode_choose im im_x D C)) ->
+    (Sub im Lt evs (E1 ++ E2) (subst_tt X (typ_mu C) A) (subst_tt X (typ_mu D) B))
+    . *)
+
+(* 
+
+not dealing with Pos/Neg of C/D properly
+
+when A = B = X, im_x = Neg, im = Pos
+
+cannot expect Sub Neg Lt evs (typ_mu C) (typ_mu D)
+
+Lemma generalized_unfolding_lemma:
+  forall E1 E2 C D A B X im im_x evs cm,
+    wf_env (E1 ++ E2) -> X \notin fv_tt C \u fv_tt D \u dom (E1 ++ E2) ->
+    Sub im cm evs (E1 ++ X ~ bind_sub im_x ++ E2) A B ->
+    forall cm' evs',
+    Sub Pos cm' evs' E2 (typ_mu (mode_choose im im_x C D)) (typ_mu (mode_choose im im_x D C)) ->
+    exists evs'', (Sub im cm evs'' (E1 ++ E2) (subst_tt X (typ_mu C) A) (subst_tt X (typ_mu D) B)). *)
+
+
+(* Idea:
+
+- need to flip the environment E2?
+
+- need the global invariant for all positive ?
+
+*)
+
+
+Lemma generalized_unfolding_lemma:
+  forall E1 E2 C D A B X im im_x evs cm,
+    wf_env (E1 ++ E2) -> X \notin fv_tt C \u fv_tt D \u dom (E1 ++ E2) ->
+    Sub im cm evs (E1 ++ X ~ bind_sub im_x ++ E2) A B ->
+    forall cm' evs',
+    Sub im_x cm' evs' E2 (typ_mu (mode_choose im im_x C D)) (typ_mu (mode_choose im im_x D C)) ->
+    exists cm'' evs'', (Sub im cm'' evs'' (E1 ++ E2) (subst_tt X (typ_mu C) A) (subst_tt X (typ_mu D) B)).
 Proof with auto.
   intros.
+  generalize dependent evs'.
+  generalize dependent C. generalize dependent D.
   dependent induction H1;intros...
   -
+    (* Nat *)
+    simpl. exists Eq, emp...
+
+  -
     (* Top *)
-    simpl. admit.
+    simpl. exists Eq, emp...
+
+  -
+    (* Top Lt *)
+    simpl. exists Lt, emp. apply Sa_top_lt...
+    
+    admit. admit.
+
+  -
+    (* Var pos *)
+    simpl. destruct (X0 == X)...
+    +
+      (* X0 == X *)
+      subst. analyze_binds_uniq H0. inversion BindsTacVal;subst.
+      exists cm', evs'. destruct im_x;simpl in H3...
+      admit. admit. (* weakening *)
+    +
+      (* X0 != X *)
+      destruct im.
+      * exists Eq, emp. apply Sa_fvar_pos... analyze_binds_uniq H0...
+      * exists Eq, emp. apply Sa_fvar_pos... analyze_binds_uniq H0...
+      (* weird? *)
+  -
+    (* Var neg *)
+    simpl. destruct (X0 == X)...
+    +
+      (* X0 == X *)
+      subst. analyze_binds_uniq H0. destruct im, im_x;inversion BindsTacVal;simpl in H3. inversion BindsTacVal;subst.
+      exists cm', evs'. destruct im_x;simpl in H3...
+      admit. admit. (* weakening *)
+    +
+      (* X0 != X *)
+      destruct im.
+      * exists Eq, emp. apply Sa_fvar_pos... analyze_binds_uniq H0...
+      * exists Eq, emp. apply Sa_fvar_pos... analyze_binds_uniq H0...
+      (* weird? *)
+
 
   -
     (* arrow *)
-    simpl. apply Sa_arrow with (cm1:=Lt) (cm2:=Lt).
-    
+    simpl. destruct cm1, cm2;simpl in H1.
+    +
+      apply Sa_arrow with (cm1:=Lt) (cm2:=Lt)...
+      { apply IHSub1 with (im_x0:=im_x) (evs':=evs') (cm':=cm')...
+        destruct im, im_x;simpl in H2;simpl... }
+      { apply IHSub2 with (im_x0:=im_x) (evs':=evs') (cm':=cm')... }
+    +
+      simpl in H0.
+      apply Sa_arrow with (cm1:=Lt) (cm2:=Eq)... 
+      { apply IHSub1 with (im_x0:=im_x) (evs':=evs') (cm':=cm')...
+        destruct im, im_x;simpl in H2;simpl... }
+      { apply Msub_eq_sem in H1_0. subst. apply Msub_refl...
     (* 
    
     TODO: 
