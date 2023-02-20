@@ -706,6 +706,10 @@ Proof with auto.
   - specialize (H2 H0). inversion H2;subst. exfalso...
 Qed.
 
+(* 
+
+C and D need to have empty evs
+
 
 Lemma generalized_unfolding_lemma:
   forall E1 E2 C D A B X im im_x evs cm,
@@ -715,9 +719,34 @@ Lemma generalized_unfolding_lemma:
     forall cm' evs',
     Sub im_x cm' evs' E2 (typ_mu (mode_choose im im_x C D)) (typ_mu (mode_choose im im_x D C)) ->
     exists cm'' evs'', (Sub im cm'' evs'' (E1 ++ E2) (subst_tt X (typ_mu C) A) (subst_tt X (typ_mu D) B)).
+
+To derive a contradition that
+
+
+          (2) cm1 = Lt -> evs2 is empty ->
+
+          need a lemma:
+          A <: B |> emp
+          C <: D |> emp
+          --------------
+          A[X->C] <: B[X->D] |> emp
+
+          evs2' should be empty, contradiction
+
+
+*)
+
+
+Lemma generalized_unfolding_lemma:
+  forall E1 E2 C D A B X im im_x evs cm,
+    wf_env (E1 ++ E2) -> X \notin fv_tt C \u fv_tt D \u dom (E1 ++ E2) ->
+    Sub im cm evs (E1 ++ X ~ bind_sub im_x ++ E2) A B ->
+    well_bind_env im (E1 ++ X ~ bind_sub im_x ++ E2) A B ->
+    forall cm',
+    Sub im_x cm' emp E2 (typ_mu (mode_choose im im_x C D)) (typ_mu (mode_choose im im_x D C)) ->
+    exists cm'' evs'', (Sub im cm'' evs'' (E1 ++ E2) (subst_tt X (typ_mu C) A) (subst_tt X (typ_mu D) B)).
 Proof with auto.
   intros.
-  generalize dependent evs'.
   generalize dependent C. generalize dependent D.
   dependent induction H1;intros...
   -
@@ -740,7 +769,7 @@ Proof with auto.
     +
       (* X0 == X *)
       subst. analyze_binds_uniq H0. inversion BindsTacVal;subst.
-      exists cm', evs'. destruct im_x;simpl in H4...
+      exists cm', emp. destruct im_x;simpl in H4...
       admit. admit. (* weakening *)
     +
       (* X0 != X *)
@@ -767,14 +796,14 @@ Proof with auto.
     (* arrow *)
     simpl. 
     
-    destruct (IHSub1) with (im_x0:=im_x) (evs':=evs') (cm':=cm') (X0:=X) (E3:=E2) (E4:=E1) (D:=C) (C:=D) as [cm1' [evs1' IHSub1']] ...
+    destruct (IHSub1) with (im_x0:=im_x) (cm':=cm') (X0:=X) (E3:=E2) (E4:=E1) (D:=C) (C:=D) as [cm1' [evs1' IHSub1']] ...
     { hnf in H2. hnf. intros. split;intros.
       + specialize (H2 X0). destruct H2.
         specialize (H5 H4). inversion H5;subst...
       + specialize (H2 X0). destruct H2.
         destruct im; specialize (H2 H4); inversion H2;subst... }
     { destruct im, im_x;simpl in H2;simpl... }
-    destruct (IHSub2) with (im_x0:=im_x) (evs':=evs') (cm':=cm') (X0:=X) (E3:=E2) (E4:=E1) (D:=D) (C:=C) as [cm2' [evs2' IHSub2']]...
+    destruct (IHSub2) with (im_x0:=im_x) (cm':=cm') (X0:=X) (E3:=E2) (E4:=E1) (D:=D) (C:=C) as [cm2' [evs2' IHSub2']]...
     { hnf in H2. hnf. intros. split;intros.
       + specialize (H2 X0). destruct H2.
         specialize (H2 H4). inversion H2;subst...
@@ -786,37 +815,54 @@ Proof with auto.
     2:{
       destruct cm1', cm2';inversion Ecomp.
       + destruct (AtomSetImpl.is_empty evs2') eqn:Eevs2'; try solve [inversion H5].
+        
 
-      Search subst_tt eq.
         (* idea: 
          Sub im Eq evs2' (E1 ++ E2) (subst_tt X (typ_mu C) A2) (subst_tt X (typ_mu D) B2)
-         => A2 = B2
-         => cm2 = Eq
+         
+         
+      (i) assume A2 = B2 and cm2 = Eq
 
-         (1) im_x = im,  X is weak positive in ...
-             X is not in fv(C) or fv(D)
-             A2[X:=mu a. C] produces some evs
-             A2[X:=X] produces some evs?
+         (1) cm1 = Eq -> A1 = B1 -> X in A1 and B1, and C != D -> X notin A2 B2 ->
+             
+             [Sub im Eq evs2' (E1 ++ E2) (subst_tt X (typ_mu C) A2) (subst_tt X (typ_mu D) B2)]
+             becomes [Sub im Eq evs2' (E1 ++  X ~ bind_sub im_x ++ E2) A2 B2]
+             -> (deterministic results of the linear algorithm)
+             evs2' [=] evs2
+             -> exists X in evs2, ~ posvar X A2 B2 -> contradiction with well-bind-env condition
+
+          (2) cm1 = Lt -> evs2 is empty ->
+
+          need a lemma:
+          A <: B |> emp
+          C <: D |> emp
+          --------------
+          A[X->C] <: B[X->D] |> emp
+
+          evs2' should be empty, contradiction
+
+      (ii) assume A2 < B2 and cm2 = Lt
+            
+            (1) cm1 = Eq -> A1 = B1 -> X in A1 and B1, and C != D -> X notin A2 B2 ->
+              
+              [Sub im Eq evs2' (E1 ++ E2) (subst_tt X (typ_mu C) A2) (subst_tt X (typ_mu D) B2)]
+              becomes [Sub im Eq evs2' (E1 ++  X ~ bind_sub im_x ++ E2) A2 B2]
+              -> (deterministic results of the linear algorithm)
+              Lt != Eq -> contradiction
+  
+            (2) cm1 = Lt -> evs2 is empty ->
 
 
-             one possible fix: C D produces empty set
+            need another lemma: if Lt then emp,
+            to get a contradiction that evs2' should be empty
 
 
-
-
-         (2) im_x != im, X is weak negative in ...
-
-
-
-         => evs2 = emp ??
-        
-        
-        *)
-
-      
-    
-    
-    admit. (* TO check: if the cm are synced? *) }
+          *)
+          admit.
+        +
+          (* the reverse direction *)
+          admit.
+    }
     exists c, (union evs1' evs2').
     apply Sa_arrow with (cm1:=cm1') (cm2:=cm2')...
   
@@ -825,7 +871,7 @@ Proof with auto.
     simpl.
     pick_fresh X'.
     specialize_x_and_L X' L.
-    destruct (H0 im_x X E2 (X' ~ bind_sub im ++ E1)) with (cm' := cm') (evs' := evs') (C:=C) (D:=D) as [cm1' [evs1' IHSub1']]...
+    destruct (H0 im_x X E2 (X' ~ bind_sub im ++ E1)) with (cm' := cm') (C:=C) (D:=D) as [cm1' [evs1' IHSub1']]...
     { constructor... }
     { hnf. intros. specialize (H2 X0). destruct H2.
       split;intros.
@@ -851,6 +897,10 @@ Proof with auto.
     destruct cm1'. 2:{ (* TODO: contradiction on Lt/Eq 
     
     !!!! may relies on syntactic equality??
+
+     (subst_tt X (typ_mu C) A1) = (subst_tt X (typ_mu D) A2)
+     => A1 = A2
+     contradict on H1
     
     *) admit. }
     { exists Lt, evs1'. apply Sa_rec_lt with (L:= L \u {{X}} \u {{X' }}).
@@ -872,14 +922,20 @@ Proof with auto.
     admit.
   -
     (* proper *)
-    destruct (IHSub im_x X E2 E1) with (cm':=cm') (evs':=evs'0) (C:=C) (D:=D) as [cm1' [evs1' IHSub1']]...
+    destruct (IHSub im_x X E2 E1) with (cm':=cm') (C:=C) (D:=D) as [cm1' [evs1' IHSub1']]...
     exists cm1', evs1'...
 
 Admitted.
 
+
+(* but one problem of making C and D equal is that
+
+the unfolding lemma also requires emp in the result
+*)
+
 Lemma unfolding_lemma :
-  forall A B evs,
-    Sub Pos Lt evs nil (typ_mu A) (typ_mu B) ->
+  forall A B,
+    Sub Pos Lt emp nil (typ_mu A) (typ_mu B) ->
     exists evs', Sub Pos Lt evs' nil (open_tt A (typ_mu A)) (open_tt B (typ_mu B)).
 Proof with auto.
   intros.
@@ -889,8 +945,8 @@ Proof with auto.
   { clear H0. specialize_x_and_L X L.
     pick_fresh X. specialize_x_and_L X L.
     destruct (generalized_unfolding_lemma
-      nil nil A B (open_tt A X) (open_tt B X) X Pos Pos evs Lt
-    ) with (cm':=Lt) (evs':=evs)...
+      nil nil A B (open_tt A X) (open_tt B X) X Pos Pos emp Lt
+    ) with (cm':=Lt) ...
     { hnf. intros. split;intro.
       + analyze_binds H0. admit.
       + analyze_binds H0. }
@@ -899,6 +955,32 @@ Proof with auto.
     rewrite <- subst_tt_intro in H0...
     rewrite <- subst_tt_intro in H0...
     destruct x...
-    (* needs to reason about Lt/Eq *) admit.
+    (* needs to reason about Lt/Eq 
+    A[x -> mu a. A] = B[x -> mu a. B]
+    -> A = B 
+    -> contradiction
+    *) admit.
   }
 Admitted.
+
+
+(* Expected lemma:
+
+equiv (A [x -> C]) (B [x -> D]) -> 
+equiv A B /\ (X in A B -> equiv C D)
+
+
+no?
+
+equiv (nat [X -> nat]) (X [X -> nat]) ->
+equiv nat X [x]
+
+*)
+
+  A [x -> C] =~= B [x -> D]
+  A =~= B
+-----------------
+  either
+    X not in A and B
+  or
+    C =~= D
