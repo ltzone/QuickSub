@@ -737,6 +737,71 @@ To derive a contradition that
 *)
 
 
+Inductive typePairR : typ -> typ -> Prop :=
+| tp_nat: 
+    typePairR  typ_nat typ_nat
+| tp_top: forall  A ,
+    type A ->
+    typePairR  A typ_top
+| tp_top_flip: forall A ,
+    type A ->
+    typePairR  typ_top A
+| tp_fvar_x: forall X,
+    typePairR (typ_fvar X) (typ_fvar X)
+| tp_arrow: forall  A1 A2 B1 B2,
+    typePairR  B1 A1 ->
+    typePairR  A2 B2 ->
+    typePairR  (typ_arrow A1 A2) (typ_arrow B1 B2)
+| tp_rec: forall  A B L,
+    (forall X, X \notin L ->
+               typePairR (open_tt A X) (open_tt B X)) ->
+    typePairR (typ_mu A) (typ_mu B).
+
+
+Lemma subst_reverse: forall A B X C D,
+    typePairR A B ->
+    subst_tt X (typ_mu C) A = subst_tt X (typ_mu D) B ->
+    (C = D \/ (X \notin fv_tt A \u fv_tt B)) /\ (A=B).
+Proof with auto.
+  intros. revert C D H0. induction H;intros;simpl in *...
+  - destruct A;simpl in *;try solve [inversion H0]...
+    destruct (a == X);try solve [inversion H0].
+  - destruct A;simpl in *;try solve [inversion H0]...
+    destruct (a == X);try solve [inversion H0].
+  - destruct (X0 == X)...
+    inversion H0...
+  - inversion H1;subst.
+    symmetry in H3. apply IHtypePairR1 in H3.
+    apply IHtypePairR2 in H4.
+    destruct_hypos. destruct H3, H2;subst...
+  - pick_fresh X0. specialize_x_and_L X0 L.
+    destruct H0 with (C:=C) (D:=D)...
+    { rewrite subst_tt_open_tt. 2:{ admit. }
+      rewrite subst_tt_open_tt with (P:= typ_mu D). 2:{ admit. }
+      inversion H1;subst. rewrite H3. f_equal.
+      simpl. destruct (X0 == X)... exfalso... }
+    apply open_tt_fresh_eq_inv in H3... subst.
+    split... destruct H2... right.
+    intros Hc. apply union_iff in Hc. destruct Hc.
+    { apply in_open with (Y:=X0) in H3... }
+    { apply in_open with (Y:=X0) in H3... }
+Admitted.
+
+#[global] Hint Constructors typePairR :core.
+
+Lemma Sub_typePairR:
+  forall E im cm evs A B,
+    Sub im cm evs E A B ->
+    typePairR A B.
+Proof with auto.
+  intros. induction H...
+  - apply tp_top. apply WFS_type in H0...
+  - apply tp_rec with (L:=L)...
+  - apply tp_rec with (L:=L)...
+  - apply tp_rec with (L:=L)...
+Qed.
+
+
 Lemma generalized_unfolding_lemma:
   forall E1 E2 C D A B X im im_x evs cm,
     wf_env (E1 ++ E2) -> X \notin fv_tt C \u fv_tt D \u dom (E1 ++ E2) ->
@@ -815,6 +880,26 @@ Proof with auto.
     2:{
       destruct cm1', cm2';inversion Ecomp.
       + destruct (AtomSetImpl.is_empty evs2') eqn:Eevs2'; try solve [inversion H5].
+
+      (* 
+      
+[[New neat idea]]
+
+      evs2' is not empty:
+
+      exists X in (E1 ++ E2), 
+      ~ posvar X A2[X-> mu a. C] B2[X-> mu a. D]
+
+      but  posvar X A2 B2
+      and  posvar X mu a. C mu a. D
+
+      uses [posvar_calc_sign]
+
+      gets posvar X [X-> mu a. C]A2  [X-> mu a. D]B2
+
+      contradiction
+      
+      *)
         
 
         (* idea: 
@@ -862,6 +947,8 @@ Proof with auto.
         +
           (* the reverse direction *)
           admit.
+
+
     }
     exists c, (union evs1' evs2').
     apply Sa_arrow with (cm1:=cm1') (cm2:=cm2')...
@@ -935,8 +1022,8 @@ the unfolding lemma also requires emp in the result
 
 Lemma unfolding_lemma :
   forall A B,
-    Sub Pos Lt emp nil (typ_mu A) (typ_mu B) ->
-    exists evs', Sub Pos Lt evs' nil (open_tt A (typ_mu A)) (open_tt B (typ_mu B)).
+    Sub Pos cm evs nil (typ_mu A) (typ_mu B) ->
+    exists cm' evs', Sub Pos cm' evs' nil (open_tt A (typ_mu A)) (open_tt B (typ_mu B)).
 Proof with auto.
   intros.
   assert (Hq:=H).
