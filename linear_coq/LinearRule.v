@@ -801,6 +801,7 @@ Proof with auto.
   - apply tp_rec with (L:=L)...
 Qed.
 
+(* C and D must produce empty evs', otherwise fails *)
 
 Lemma generalized_unfolding_lemma:
   forall E1 E2 C D A B X im im_x evs cm,
