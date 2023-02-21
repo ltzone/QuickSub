@@ -1021,34 +1021,74 @@ Admitted.
 the unfolding lemma also requires emp in the result
 *)
 
+Lemma sub_lt_then_emp: forall im cm evs E A B,
+    Sub im cm evs E A B ->
+    cm = Lt ->
+    evs [=] emp.
+Proof with auto.
+  intros.
+  dependent induction H;subst;try solve [reflexivity]...
+  - inversion H1.
+  - destruct cm1, cm2; inversion H1;subst...
+    + rewrite IHSub1... rewrite IHSub2... fsetdec.
+    + destruct (AtomSetImpl.is_empty evs2) eqn:Eevs;
+        try solve [inversion H3]. apply is_empty_iff in Eevs.
+      apply KeySetProperties.empty_is_empty_1 in Eevs.
+      rewrite IHSub1... fsetdec.
+    + destruct (AtomSetImpl.is_empty evs1) eqn:Eevs;
+        try solve [inversion H3]. apply is_empty_iff in Eevs.
+      apply KeySetProperties.empty_is_empty_1 in Eevs.
+      rewrite IHSub2... fsetdec.
+  - pick_fresh X. specialize_x_and_L X L. rewrite H0... fsetdec.
+  - inversion H1.
+  - inversion H1.
+  - rewrite <- H0. rewrite IHSub... fsetdec.
+Qed.
+
+
 Lemma unfolding_lemma :
-  forall A B,
-    Sub Pos cm evs nil (typ_mu A) (typ_mu B) ->
-    exists cm' evs', Sub Pos cm' evs' nil (open_tt A (typ_mu A)) (open_tt B (typ_mu B)).
+  forall A B evs,
+    Sub Pos Lt evs nil (typ_mu A) (typ_mu B) ->
+    evs [=] emp ->
+    Sub Pos Lt emp nil (open_tt A (typ_mu A)) (open_tt B (typ_mu B)).
 Proof with auto.
   intros.
   assert (Hq:=H).
+  rename H0 into Hemp.
   replace empty with (empty ++ empty)...
   dependent induction H;subst...
   { clear H0. specialize_x_and_L X L.
     pick_fresh X. specialize_x_and_L X L.
     destruct (generalized_unfolding_lemma
-      nil nil A B (open_tt A X) (open_tt B X) X Pos Pos emp Lt
+      nil nil A B (open_tt A X) (open_tt B X) X Pos Pos evs Lt
     ) with (cm':=Lt) ...
     { hnf. intros. split;intro.
       + analyze_binds H0. admit.
       + analyze_binds H0. }
+    { simpl. apply Sa_evs_proper with (evs := evs)... }
     destruct H0 as [evs' ?].
-    exists evs'. 
+
+    destruct x.
+    2:{
+      (* 
+      Lt subst by typ_mu
+      contradiction *)
+      admit.
+    }
+
+    pose proof sub_lt_then_emp _ _ _ _ _  _ H0 eq_refl...
+    rewrite H1 in *. unfold emp in *.
     rewrite <- subst_tt_intro in H0...
     rewrite <- subst_tt_intro in H0...
-    destruct x...
+
     (* needs to reason about Lt/Eq 
     A[x -> mu a. A] = B[x -> mu a. B]
     -> A = B 
     -> contradiction
-    *) admit.
+    *)
   }
+  apply IHSub...
+  rewrite H0. rewrite Hemp. reflexivity. 
 Admitted.
 
 
