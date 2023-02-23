@@ -1407,6 +1407,55 @@ Proof with auto.
     
   -
     (* rec-eq *)
+    simpl.
+    pick_fresh X'.
+    specialize_x_and_L X' L.
+    destruct (H0 im_x X E2 (X' ~ bind_sub im ++ E1)) with (cm' := cm') (C:=C) (D:=D) as [cm1' [evs1' IHSub1']]...
+    { constructor... }
+    { hnf. intros. pose proof (H2 X0 im_x0) as H2'. 
+      destruct (KeySetFacts.eq_dec X' X0).
+      { 
+        subst. inversion H5;subst...
+        2:{ apply binds_In in H6. rewrite !dom_app in H6.
+            exfalso. clear - X0 H6 Fr. apply Fr... simpl in H6.
+            clear Fr. fsetdec. }
+        inversion H6;subst...  
+        rewrite xor_prop_refl. 
+        apply soundness_posvar_simpl with (X:=X0) (im_x := im_x0) in H1...
+        rewrite xor_prop_refl in H1...
+      }
+      {
+        inversion H5;subst...
+        { inversion H6;subst;exfalso... } 
+        apply H2 in H6.
+        inversion H6;subst... 
+        { 
+          pick_fresh Y. specialize_x_and_L Y (union L0 (singleton X0)).
+          rewrite subst_tt_intro with (X:=Y) (T2:=A1)...
+          rewrite subst_tt_intro with (X:=Y) (T2:=A2)...
+          apply pos_rename_fix... }
+        { apply posvar_self_notin...
+          { pick_fresh Z. specialize_x_and_L Z (union L0 {{X0}})...
+            rewrite subst_tt_intro with (X:=Z)...
+            apply subst_tt_type... }
+          { apply notin_fv_tt_open_aux... }
+        }
+      }
+    }
+    {
+      destruct cm1'.
+      +
+        exists Lt, evs1'. apply Sa_rec_lt with (L:= L \u {{X}} \u {{X' }}\u dom (E1 ++ E2)).
+        intros.
+        rewrite subst_tt_open_tt_var... 2:{ admit. }
+        rewrite subst_tt_open_tt_var... 2:{ admit. }
+        admit.
+      +
+        exists Eq, evs1'.
+
+    }
+
+
     admit.
   -
     (* rec-eq-notin *)
