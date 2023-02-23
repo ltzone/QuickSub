@@ -503,13 +503,3 @@ Proof with auto.
     apply wfs_weakening...
     apply wfs_type with (E:=E1 ++ E2)...
 Qed. *)
-
-
-Ltac solve_notin :=
-  repeat
-    match goal with
-    | [H : _ |- _ \notin fv_tt (open_tt _ _) ] => apply notin_fv_tt_open_aux
-    | [H : _ |- _ \notin fv_tt (subst_tt _ _ _) ] => apply notin_fv_subst
-    | [H : _ |- _ \notin (_ \u _) ] => apply notin_union;split
-    | [H : _ |- _ \notin _ ] => simpl;auto               
-    end.
