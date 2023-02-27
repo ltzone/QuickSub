@@ -1345,14 +1345,18 @@ Proof with auto.
       apply open_tt_fresh_eq_inv in IHSub1'...
       2:{ apply notin_fv_subst... }
       2:{ apply notin_fv_subst... }
-      apply subst_reverse in IHSub1'...
+      rewrite IHSub1'.
+      exists Eq.
+      apply Msub_refl...
+      admit. admit.
+      (* apply subst_reverse in IHSub1'...
       2:{ admit. }
       2:{ admit. }
       2:{ admit. }
       destruct_hypos.
       subst...
       apply Msub_lt_not_eq in H1...
-      exfalso...
+      exfalso... *)
     }
     { exists Lt, evs1'. apply Sa_rec_lt with (L:= L \u {{X}} \u {{X' }}\u dom (E1 ++ E2)).
       intros.  
@@ -1647,6 +1651,27 @@ Proof with auto.
 Admitted. 
 
 
+
+Lemma unfolding_lemma_eq :
+  forall A B evs,
+    Sub Pos Eq evs nil (typ_mu A) (typ_mu B) ->
+    evs [=] emp ->
+    Sub Pos Eq emp nil (open_tt A (typ_mu A)) (open_tt B (typ_mu B)).
+Proof with auto.
+  intros.
+  assert (Hq:=H).
+  apply Msub_eq_sem in Hq.
+  inversion Hq;subst...
+  pose proof Msub_refl empty Pos (open_tt B (typ_mu B))...
+  destruct H1...
+  { admit. }
+  { admit. }
+  assert (Hq':=H1).
+  apply sub_evs_fv in H1. assert (WFS empty (open_tt B (typ_mu B))) by admit.
+  apply WFS_dom in H2.
+  assert (x[=]emp) by fsetdec.
+  rewrite H3 in Hq'...
+Admitted.
 
 
 (* Expected lemma:
