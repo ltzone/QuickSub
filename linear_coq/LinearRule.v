@@ -1077,29 +1077,15 @@ Proof with auto using WFS_weakening.
   - rewrite <- H0. apply IHSub...
 Qed.
 
-(* 
-
-Fails, because the well-bind-env condition fails to prove rec-eq-notin case
-
 
 Lemma generalized_unfolding_lemma:
   forall E1 E2 C D A B X im im_x evs cm,
-    wf_env (E1 ++ E2) -> X \notin fv_tt C \u fv_tt D \u dom (E1 ++ E2) ->
+    wf_env (E1 ++ E2) -> X \notin fv_tt C \u fv_tt D \u dom (E1 ++ E2) \u evs ->
     Sub im cm evs (E1 ++ X ~ bind_sub im_x ++ E2) A B ->
     well_bind_env im (E1 ++ X ~ bind_sub im_x ++ E2) A B ->
     forall cm',
     Sub im_x cm' emp E2 (typ_mu (mode_choose im im_x C D)) (typ_mu (mode_choose im im_x D C)) ->
-    exists cm'' evs'', (Sub im cm'' evs'' (E1 ++ E2) (subst_tt X (typ_mu C) A) (subst_tt X (typ_mu D) B)). *)
-
-
-
-Lemma generalized_unfolding_lemma:
-forall E1 E2 C D A B X im im_x evs cm,
-  wf_env (E1 ++ E2) -> X \notin fv_tt C \u fv_tt D \u dom (E1 ++ E2) \u evs ->
-  Sub im cm evs (E1 ++ X ~ bind_sub im_x ++ E2) A B ->
-  forall cm',
-  Sub im_x cm' emp E2 (typ_mu (mode_choose im im_x C D)) (typ_mu (mode_choose im im_x D C)) ->
-  exists cm'' evs'', (Sub im cm'' evs'' (E1 ++ E2) (subst_tt X (typ_mu C) A) (subst_tt X (typ_mu D) B)).
+    exists cm'' evs'', (Sub im cm'' evs'' (E1 ++ E2) (subst_tt X (typ_mu C) A) (subst_tt X (typ_mu D) B)).
 Proof with auto.
   intros.
   generalize dependent C. generalize dependent D.
@@ -1138,6 +1124,8 @@ Proof with auto.
     +
       (* X0 == X *)
       subst. analyze_binds_uniq H0.
+      (* apply well_bind_env_fvar_x with (im_x:=im_x) in H2...
+      subst... destruct im_x;inversion BindsTacVal. *)
       (* contradiction on the global invariant evs constraint *)
     +
       (* X0 != X *)
@@ -1148,91 +1136,62 @@ Proof with auto.
   -
     (* arrow *)
     simpl. 
-    
+  
+
     destruct (IHSub1) with (im_x0:=im_x) (cm':=cm') (X0:=X) (E3:=E2) (E4:=E1) (D:=C) (C:=D) as [cm1' [evs1' IHSub1']] ...
+    { hnf in H2. hnf. intros.
+      apply H2 in H4. inversion H4;subst...
+      destruct im, im_x0; simpl in H10;simpl...
+    }
     { destruct im, im_x; simpl in H2;simpl... }
     
     destruct (IHSub2) with (im_x0:=im_x) (cm':=cm') (X0:=X) (E3:=E2) (E4:=E1) (D:=D) (C:=C) as [cm2' [evs2' IHSub2']]...
+    { hnf in H2. hnf. intros.
+      apply H2 in H4. inversion H4;subst... }
+    (* split;intros.
+      + specialize (H2 X0). destruct H2.
+        specialize (H2 H4). inversion H2;subst...
+      + specialize (H2 X0). destruct H2.
+        destruct im; specialize (H5 H4); inversion H5;subst... } *)
+
       
     destruct ((compose_cm cm1' cm2' evs1' evs2')) eqn:Ecomp.
     2:{
-
-
       destruct cm1', cm2';inversion Ecomp.
-      + destruct (AtomSetImpl.is_empty evs2') eqn:Eempty; try solve [inversion H4].
+      + destruct (AtomSetImpl.is_empty evs2') eqn:Eempty; try solve [inversion H5].
         apply is_not_empty_iff in Eempty. apply not_empty_has in Eempty.
         destruct Eempty as [X' Eempty].
-
         assert (exists im_x', binds X' (bind_sub im_x') (E1 ++ E2)) by admit.
-        destruct H3 as [im_x' H3].
-
-destruct (in_dec evs2 X') as [Hnotin|Hin].
-{
-
-       
+        destruct H4 as [im_x' H4].
         pose proof posvar_false_simpl _ _ _ _ _ _ IHSub2' X' im_x' Eempty.
-        exfalso. apply H5...
-        apply posvar_calc_sign with (m2:=mode_xor im im_x) (m4:=im_x) ...
-        - admit. 
-        - 
+        exfalso. apply H6...
         
-        apply soundness_posvar_simpl with (X:=X') (im_x:=im_x') in H1_0...
-        (* hnf in H2.
-          destruct cm2.
-          * (* cm2 cannot be Lt *)
-            apply Msub_eq_sem in IHSub2'.
-            apply subst_reverse in IHSub2'... 2:{ admit. } 2:{ admit. } 2:{ admit. }
-            destruct IHSub2'. apply Msub_lt_not_eq in H1_0...
-          * (* cm2 is Eq *)
-            destruct cm1.
-            **
-              (* cm1 is Lt *)
-              simpl in H0. destruct (AtomSetImpl.is_empty evs2) eqn:Eevs2; try solve [inversion H0]...
-              apply is_empty_iff in Eevs2. clear - Eevs2. fsetdec.
-            **
-              (* cm1 is Eq *)
-              pose proof IHSub2' as IHSub2''.
-              apply Msub_eq_sem in IHSub2'.
-              apply subst_reverse in IHSub2'... 2:{ admit. } 2:{ admit. } 2:{ admit. }
-              destruct IHSub2'. destruct H6.
-              { subst. apply Msub_eq_sem in H1_. subst.
-                apply Msub_lt_not_eq in IHSub1'... }
-              { intros Hc. 
-                rewrite <- !subst_tt_fresh in IHSub2''...
-                destruct_hypos.
-                Search fv_tt subst_tt.
-
-              }
-
-          } *)
-
-
-          
-
-        - apply soundness_posvar_simpl with (X:=X) (im_x:=im_x) in H1_0...
-        - rewrite_alist (nil ++ E2) in H2.
-          apply sub_weakening with (E3:=E1) in H2...
-          apply soundness_posvar_simpl with (X:=X') (im_x:=im_x') in H2...
+        apply posvar_calc_sign with (m2:=mode_xor im im_x) (m4:=im_x) ...
+        - admit.
+        - hnf in H2. specialize (H2 X' im_x').
+          assert (binds X' (bind_sub im_x') (E1 ++ X ~ bind_sub im_x ++ E2))...
+          specialize (H2 H7).
+          inversion H2;subst...
+        - hnf in H2. specialize (H2 X im_x).
+          assert (binds X (bind_sub im_x) (E1 ++ X ~ bind_sub im_x ++ E2))...
+          specialize (H2 H7).
+          inversion H2;subst...
+        - rewrite_alist (nil ++ E2) in H3.
+          apply sub_weakening with (E3:=E1) in H3...
+          apply soundness_posvar_simpl with (X:=X') (im_x:=im_x') in H3...
           rewrite xor_prop_5.
           destruct im, im_x, im_x';
             simpl in H3;simpl;auto;
             apply posvar_comm;auto.
-        - apply soundness_posvar_fresh with (X:=X) (im':=im_x) in H2...
+        - apply soundness_posvar_fresh with (X:=X) (im':=im_x) in H3...
           destruct im, im_x;
-            simpl in H2;simpl;auto;
+            simpl in H3;simpl;auto;
             apply posvar_comm;auto.
         - intros Hc. subst.
           apply sub_evs_fv in IHSub2'...
           destruct_hypos.
           admit.
-}
-{
-  pose proof posvar_false_simpl _ _ _ _ _ _ H1_0 X' im_x' Hin.
-
-
-}
-
-        + destruct (AtomSetImpl.is_empty evs1') eqn:Eempty; try solve [inversion H4].
+        + destruct (AtomSetImpl.is_empty evs1') eqn:Eempty; try solve [inversion H5].
         apply is_not_empty_iff in Eempty. apply not_empty_has in Eempty.
         destruct Eempty as [X' Eempty].
         assert (exists im_x', binds X' (bind_sub im_x') E2) by admit.
@@ -1265,6 +1224,7 @@ destruct (in_dec evs2 X') as [Hnotin|Hin].
           destruct_hypos.
           admit.
     }
+
       (* 
       
 [[New neat idea]]
@@ -1588,149 +1548,18 @@ destruct (in_dec evs2 X') as [Hnotin|Hin].
     simpl.
     pick_fresh X'.
     specialize_x_and_L X' L.
-    destruct (H0 im_x X E2 (X' ~ bind_sub im ++ E1)) with (cm' := cm') (C:=C) (D:=D) as [cm1' [evs1' IHSub1']]...
-    { constructor... }
-    { hnf. intros. pose proof (H2 X0 im_x0) as H2'. 
-      destruct (KeySetFacts.eq_dec X' X0).
-      { 
-        subst. inversion H5;subst...
-        2:{ apply binds_In in H6. rewrite !dom_app in H6.
-            exfalso. clear - X0 H6 Fr. apply Fr... simpl in H6.
-            clear Fr. fsetdec. }
-        inversion H6;subst...  
-        rewrite xor_prop_refl. 
-        apply soundness_posvar_simpl with (X:=X0) (im_x := im_x0) in H1...
-        rewrite xor_prop_refl in H1...
-      }
-      {
-        inversion H5;subst...
-        { inversion H6;subst;exfalso... } 
-        apply H2 in H6.
-        inversion H6;subst... 
-        { 
-          pick_fresh Y. specialize_x_and_L Y (union L0 (singleton X0)).
-          rewrite subst_tt_intro with (X:=Y) (T2:=A1)...
-          rewrite subst_tt_intro with (X:=Y) (T2:=A2)...
-          apply pos_rename_fix... }
-        { apply posvar_self_notin...
-          { pick_fresh Z. specialize_x_and_L Z (union L0 {{X0}})...
-            rewrite subst_tt_intro with (X:=Z)...
-            apply subst_tt_type... }
-          { apply notin_fv_tt_open_aux... }
-        }
-      }
-    }
-
-    {
-      destruct cm1'.
-      +
-        exists Lt, evs1'. apply Sa_rec_lt with (L:= L \u {{X}} \u {{X' }}\u dom (E1 ++ E2)).
-        intros.
-        rewrite_alist (nil ++ X0 ~ bind_sub im ++ E1 ++ E2).
-        replace evs1' with (if AtomSetImpl.mem X' evs1' then AtomSetImpl.add X0 (remove X' evs1') else evs1')...
-        apply sub_replacing_var...
-        { rewrite subst_tt_open_tt_var... 2:{ admit. }
-          rewrite subst_tt_open_tt_var... { admit. }
-        }
-        { solve_notin... }
-        { constructor...  }
-        {
-          destruct (AtomSetImpl.mem X' evs1') eqn:Ex'...
-          apply mem_iff in Ex'.
-          pose proof posvar_false_simpl _ _ _ _ _ _ IHSub1' X' im Ex'.
-          exfalso. apply H6... rewrite xor_prop_refl.
-          apply posvar_calc_sign with (m2:=mode_xor im im_x) (m4:=Pos)...
-          + admit.
-          + apply soundness_posvar_simpl with (X:=X') (im_x:=im) in H1...
-            rewrite xor_prop_refl in H1...
-          + specialize (H2 X im_x).
-            assert ( binds X (bind_sub im_x) (E1 ++ X ~ bind_sub im_x ++ E2))...
-            specialize (H2 H7).
-            inversion H2;subst...
-            { 
-              pick_fresh Y. specialize_x_and_L Y (union L0 (singleton X0)).
-              rewrite subst_tt_intro with (X:=Y) (T2:=A1)...
-              rewrite subst_tt_intro with (X:=Y) (T2:=A2)...
-              apply pos_rename_fix... }
-            {
-              apply posvar_self_notin...
-              { pick_fresh Z. specialize_x_and_L Z (union L0 {{X0}})...
-                rewrite subst_tt_intro with (X:=Z)...
-                apply subst_tt_type... }
-              { apply notin_fv_tt_open_aux... }
-            }
-          + rewrite xor_prop_1. 
-            rewrite_alist (nil ++ E2) in H4.
-            apply sub_weakening with (E3:= (X' ~ bind_sub im ++ E1 ++ X ~ bind_sub im_x)) in H4...
-            2:{ simpl. constructor...
-                rewrite app_assoc. apply wf_env_weakening... }
-            apply soundness_posvar_simpl with (X:=X') (im_x:=im) in H4...
-            destruct im,im_x;simpl in H4;auto;apply posvar_comm;auto.
-          + rewrite_alist (nil ++ E2) in H4.
-            apply sub_weakening with (E3:= (E1 ++ X ~ bind_sub im_x)) in H4...
-            2:{ simpl. rewrite app_assoc. apply wf_env_weakening... }
-            apply soundness_posvar_simpl with (X:=X) (im_x:=im_x) in H4...
-            rewrite xor_prop_refl in H4.
-            destruct im,im_x;simpl in H4;auto;apply posvar_comm;auto.
-        }
-      +
-        exists Eq, evs1'. apply Sa_rec_eq_notin with (L:= L \u {{X}} \u {{X' }}\u dom (E1 ++ E2)).
-        intros.
-        rewrite_alist (nil ++ X0 ~ bind_sub im ++ E1 ++ E2).
-        replace evs1' with (if AtomSetImpl.mem X' evs1' then AtomSetImpl.add X0 (remove X' evs1') else evs1')...
-        apply sub_replacing_var...
-        { rewrite subst_tt_open_tt_var... 2:{ admit. }
-          rewrite subst_tt_open_tt_var... { admit. }
-        }
-        { solve_notin... }
-        { constructor...  }
-        {
-          destruct (AtomSetImpl.mem X' evs1') eqn:Ex'...
-          apply mem_iff in Ex'.
-          pose proof posvar_false_simpl _ _ _ _ _ _ IHSub1' X' im Ex'.
-          exfalso. apply H6... rewrite xor_prop_refl.
-          apply posvar_calc_sign with (m2:=mode_xor im im_x) (m4:=Pos)...
-          + admit.
-          + apply soundness_posvar_simpl with (X:=X') (im_x:=im) in H1...
-            rewrite xor_prop_refl in H1...
-          + specialize (H2 X im_x).
-            assert ( binds X (bind_sub im_x) (E1 ++ X ~ bind_sub im_x ++ E2))...
-            specialize (H2 H7).
-            inversion H2;subst...
-            { 
-              pick_fresh Y. specialize_x_and_L Y (union L0 (singleton X0)).
-              rewrite subst_tt_intro with (X:=Y) (T2:=A1)...
-              rewrite subst_tt_intro with (X:=Y) (T2:=A2)...
-              apply pos_rename_fix... }
-            {
-              apply posvar_self_notin...
-              { pick_fresh Z. specialize_x_and_L Z (union L0 {{X0}})...
-                rewrite subst_tt_intro with (X:=Z)...
-                apply subst_tt_type... }
-              { apply notin_fv_tt_open_aux... }
-            }
-          + rewrite xor_prop_1. 
-            rewrite_alist (nil ++ E2) in H4.
-            apply sub_weakening with (E3:= (X' ~ bind_sub im ++ E1 ++ X ~ bind_sub im_x)) in H4...
-            2:{ simpl. constructor...
-                rewrite app_assoc. apply wf_env_weakening... }
-            apply soundness_posvar_simpl with (X:=X') (im_x:=im) in H4...
-            destruct im,im_x;simpl in H4;auto;apply posvar_comm;auto.
-          + rewrite_alist (nil ++ E2) in H4.
-            apply sub_weakening with (E3:= (E1 ++ X ~ bind_sub im_x)) in H4...
-            2:{ simpl. rewrite app_assoc. apply wf_env_weakening... }
-            apply soundness_posvar_simpl with (X:=X) (im_x:=im_x) in H4...
-            rewrite xor_prop_refl in H4.
-            destruct im,im_x;simpl in H4;auto;apply posvar_comm;auto.
-        }
-    }
-
-
-
+    assert (A1 = A2). { apply Msub_eq_sem in H1... apply open_tt_fresh_eq_inv in H1... }
+    subst. rewrite <- !subst_tt_fresh...
+    exists Eq.
+    apply Msub_refl...
     admit.
+    admit.
+    (* Tricky?? *)
+
   -
     (* proper *)
     destruct (IHSub im_x X E2 E1) with (cm':=cm') (C:=C) (D:=D) as [cm1' [evs1' IHSub1']]...
+    { rewrite H0... }
     exists cm1', evs1'...
 
 Admitted.
@@ -1815,7 +1644,9 @@ Proof with auto.
   }
   apply IHSub...
   rewrite H0. rewrite Hemp. reflexivity. 
-Admitted.
+Admitted. 
+
+
 
 
 (* Expected lemma:

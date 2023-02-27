@@ -5,6 +5,7 @@ Infra.v
 Variance.v
 PosVar.v
 LinearRule.v
+LinearSubst.v
 FiniteUnfolding.v
 Typesafety.v
 DoubleUnfolding.v
