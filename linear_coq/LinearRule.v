@@ -1084,8 +1084,8 @@ Lemma generalized_unfolding_lemma:
     Sub im cm evs (E1 ++ X ~ bind_sub im_x ++ E2) A B ->
     well_bind_env im (E1 ++ X ~ bind_sub im_x ++ E2) A B ->
     forall cm',
-    Sub im_x cm' emp E2 (typ_mu (mode_choose im im_x C D)) (typ_mu (mode_choose im im_x D C)) ->
-    exists cm'' evs'', (Sub im cm'' evs'' (E1 ++ E2) (subst_tt X (typ_mu C) A) (subst_tt X (typ_mu D) B)).
+    Sub im_x cm' emp E2 ( (mode_choose im im_x C D)) ( (mode_choose im im_x D C)) ->
+    exists cm'' evs'', (Sub im cm'' evs'' (E1 ++ E2) (subst_tt X ( C) A) (subst_tt X ( D) B)).
 Proof with auto.
   intros.
   generalize dependent C. generalize dependent D.
@@ -1330,7 +1330,7 @@ Proof with auto.
       }
     }
     rewrite <- subst_tt_open_tt_var in IHSub1'... 2:{ admit. }
-    rewrite <- subst_tt_open_tt_var with (P:=(typ_mu D)) in IHSub1'... 
+    rewrite <- subst_tt_open_tt_var with (P:=( D)) in IHSub1'... 
     2:{ admit. }
     destruct cm1'. 2:{ (* TODO: contradiction on Lt/Eq 
     
@@ -1613,7 +1613,7 @@ Proof with auto.
   { clear H0. specialize_x_and_L X L.
     pick_fresh X. specialize_x_and_L X L.
     destruct (generalized_unfolding_lemma
-      nil nil A B (open_tt A X) (open_tt B X) X Pos Pos evs Lt
+      nil nil (typ_mu A) (typ_mu B) (open_tt A X) (open_tt B X) X Pos Pos evs Lt
     ) with (cm':=Lt) ...
     { hnf. intros.
       apply soundness_posvar_simpl with (X:=X0) (im_x:=im_x) in H...
