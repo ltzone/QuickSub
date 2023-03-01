@@ -212,3 +212,91 @@ Proof with auto.
       { assert (Sub im Eq (evs `union` fv_tt A1) E (typ_mu A1) (typ_mu A2))... apply  Sa_rec_eq_in with (L:=L)...
         apply Msub_eq_sem in H2. inversion H2;subst... }
 Qed.
+
+
+
+
+Ltac get_well_form :=
+    repeat match goal with
+    | [ H : Sub _ _ _ _ _ _ |- _ ] => apply sub_regular in H;destruct_hypos   
+           end.
+
+Ltac get_type :=
+    repeat match goal with
+           | [ H : Sub _ _ _ _ _ _ |- _ ] => get_well_form
+           | [ H : WFS _ _ |- _ ] => apply WFS_type in H
+           end.
+
+           
+
+Ltac add_nil :=
+    match goal with
+    | [ |- WFS ?E _ ] => rewrite_alist (nil ++ E)                               
+    | [ |- Sub _ _ _ ?E _ _ ] => rewrite_alist (nil ++ E)      
+    end.
+
+
+
+Lemma WFS_weakening: forall E1 E2 T E,
+WFS (E1 ++ E2) T ->
+WFS (E1 ++ E ++ E2) T.
+Proof with auto.
+intros.
+generalize dependent E.
+dependent induction H;intros...
+-
+apply WFS_fvar with (im:=im)...
+-
+apply WFS_rec with (L:=L) (im:=im);intros...
++
+  rewrite_alist (([(X, bind_sub im)] ++ E1) ++ E ++ E2).
+  apply H0...
+Qed.
+
+
+Lemma wf_env_weakening: forall E1 E2 X im,
+wf_env (E1++E2) ->
+X \notin dom (E1++E2) ->
+wf_env (E1 ++ (X~bind_sub im) ++ E2).
+Proof with auto.
+intros E1.
+induction E1;intros...
++ constructor...
++ destruct a.
+rewrite_alist ((a, b) :: E1 ++ E2) in H.
+rewrite_alist ((a, b) :: E1 ++ [(X, bind_sub im)] ++ E2).
+dependent destruction H.
+- constructor...
+- constructor...
+  apply WFS_weakening...
+Qed.
+
+
+Lemma subst_tt_wfs2: forall A B E1 E2 X im,
+    WFS (E1 ++ E2) A ->
+    WFS (E1 ++ (X ~ bind_sub im) ++ E2) B ->
+    WFS (E1 ++ E2) (subst_tt X A B).
+Proof with auto.
+  intros.
+  generalize dependent A.
+  dependent induction H0;intros...
+  -
+    simpl.
+    destruct (X0==X)...
+    apply WFS_fvar with (im:=im0)...
+    analyze_binds H...
+    
+  -
+    simpl in *...
+    apply WFS_arrow.
+    apply IHWFS1 with (im0:=im)...
+    apply IHWFS2 with (im0:=im)...
+  -
+    simpl.
+    apply WFS_rec with (L:=L \u {{X}} \u fv_tt A0) (im:=im0).
+    intros.
+    rewrite subst_tt_open_tt_var... 2:{ apply WFS_type in H1... }
+    rewrite_alist (([(X0, bind_sub im0)] ++ E1) ++ E2).
+    apply H0 with (im1:=im)...
+    { add_nil. rewrite app_assoc. apply WFS_weakening... }
+Qed.

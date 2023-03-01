@@ -473,33 +473,3 @@ Proof with auto.
   rewrite <- H in H0.
   auto.
 Qed.
-(* 
-Lemma subst_tt_wfs2: forall A B E1 E2 X im,
-    WFS (E1 ++ E2) A ->
-    WFS (E1 ++ (X ~ bind_sub im) ++ E2) B ->
-    WFS (E1 ++ E2) (subst_tt X A B).
-Proof with auto.
-  intros.
-  generalize dependent A.
-  dependent induction H0;intros...
-  -
-    simpl.
-    destruct (X0==X)...
-    apply WFS_fvar with (im:=im0)...
-    analyze_binds H...
-    
-  -
-    simpl in *...
-    apply WFS_arrow.
-    apply IHWFS1 with (im:=im)...
-  -
-    simpl.
-    apply WFS_rec with (L:=L \u {{X}} \u fv_tt A0).
-    intros.
-    rewrite <- subst_open_unfoldn...
-    rewrite_alist (([(X0, bind_sub)] ++ E1) ++ E2).
-    apply H0...
-    rewrite_alist (nil ++ [(X0, bind_sub)] ++ (E1 ++ E2)).
-    apply wfs_weakening...
-    apply wfs_type with (E:=E1 ++ E2)...
-Qed. *)

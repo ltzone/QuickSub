@@ -12,6 +12,25 @@ Proof with auto.
   + intros. subst. apply Sa_evs_proper with (evs:=y1)... symmetry...
 Qed.
 
+Instance typ_eq_dec: EqDec_eq typ.
+Proof with auto.
+  hnf. intros.
+  generalize dependent y.
+  induction x; intros; destruct y; try solve [right;intros c;inversion c]...
+  - destruct (eq_dec n n0)...
+    right. intros c. inversion c;subst...
+  - destruct (eq_dec a a0)...
+    + left. rewrite e...
+    + right. intros c. inversion c;subst...
+  - destruct (IHx y)...
+    + left. rewrite e...
+    + right. intros c. inversion c;subst...
+  - destruct (IHx1 y1)...
+    + destruct (IHx2 y2)...
+      * left. rewrite e,e0...
+      * right. intros c. inversion c;subst...
+    + right. intros c. inversion c;subst...
+Qed. 
 
 
 
@@ -1017,41 +1036,6 @@ Proof with auto.
 Qed.
 
 
-Lemma WFS_weakening: forall E1 E2 T E,
-    WFS (E1 ++ E2) T ->
-    WFS (E1 ++ E ++ E2) T.
-Proof with auto.
-  intros.
-  generalize dependent E.
-  dependent induction H;intros...
-  -
-    apply WFS_fvar with (im:=im)...
-  -
-    apply WFS_rec with (L:=L) (im:=im);intros...
-    +
-      rewrite_alist (([(X, bind_sub im)] ++ E1) ++ E ++ E2).
-      apply H0...
-Qed.
-
-
-Lemma wf_env_weakening: forall E1 E2 X im,
-    wf_env (E1++E2) ->
-    X \notin dom (E1++E2) ->
-    wf_env (E1 ++ (X~bind_sub im) ++ E2).
-Proof with auto.
-  intros E1.
-  induction E1;intros...
-  + constructor...
-  + destruct a.
-    rewrite_alist ((a, b) :: E1 ++ E2) in H.
-    rewrite_alist ((a, b) :: E1 ++ [(X, bind_sub im)] ++ E2).
-    dependent destruction H.
-    - constructor...
-    - constructor...
-      apply WFS_weakening...
-Qed.
-
-
 Lemma sub_weakening: forall E1 E2 E3 im cm evs A B,
   Sub im cm evs (E1 ++ E2) A B -> wf_env (E1 ++ E3 ++ E2) ->
   Sub im cm evs (E1 ++ E3 ++ E2) A B.
@@ -1078,6 +1062,109 @@ Proof with auto using WFS_weakening.
 Qed.
 
 
+
+Lemma bind_typ_WFS: forall X E A t, 
+  wf_env E ->
+  WFS E A -> binds X (bind_typ t) E ->
+  X `notin` fv_tt A.
+Proof with auto.
+  intros.
+  induction H0...
+  - destruct (X == X0)... subst.
+    apply uniq_from_wf_env in H.
+    pose proof binds_unique _ _ _ _ _ H1 H0 H.
+    inversion H2.
+  - pick_fresh Y. specialize_x_and_L Y L.
+    apply rename_env_open in H2...
+Qed.
+
+Lemma bind_typ_Sub: forall X E evs im cm A B t, 
+  Sub im cm evs E A B -> binds X (bind_typ t) E ->
+  X `notin` fv_tt A /\ X `notin` fv_tt B.
+Proof with auto.
+  intros.
+  induction H...
+  - 
+    apply bind_typ_WFS with (X:=X) (t:=t) in H1...
+  -
+    destruct (X == X0)... subst.
+    apply uniq_from_wf_env in H.
+    pose proof binds_unique _ _ _ _ _ H1 H0 H.
+    inversion H2.
+  -
+    destruct (X == X0)... subst.
+    apply uniq_from_wf_env in H.
+    pose proof binds_unique _ _ _ _ _ H1 H0 H.
+    inversion H2.
+  -
+    pick_fresh Y. specialize_x_and_L Y L.
+    destruct H1...
+    apply rename_env_open in H1...
+    apply rename_env_open in H2...
+  -
+    pick_fresh Y. specialize_x_and_L Y L.
+    destruct H1...
+    apply rename_env_open in H1...
+    apply rename_env_open in H2...
+  -
+    pick_fresh Y. specialize_x_and_L Y L.
+    destruct H1...
+    apply rename_env_open in H1...
+    apply rename_env_open in H2...
+Qed.
+
+
+Lemma bind_ex_evs: forall X E evs im cm A B, 
+  Sub im cm evs E A B ->  X `in` evs ->
+  (exists im_x, binds X (bind_sub im_x) E).
+Proof with auto.
+  intros. generalize dependent X.
+  induction H;intros;try solve [exfalso;fsetdec]...
+  -
+    assert (X0 = X) by fsetdec. subst. exists (flip_im im)...
+  -
+    apply union_iff in H2. destruct H2.
+    +
+      apply IHSub1 in H2...
+    +
+      apply IHSub2 in H2...
+  -
+    pick_fresh X'. specialize_x_and_L X' L.
+    apply H0 in H1... destruct H1.
+    analyze_binds H1...
+    exists x...
+  -
+    pick_fresh X'. specialize_x_and_L X' L.
+    apply H0 in H1... destruct H1.
+    analyze_binds H1...
+    exists x...
+  -
+    assert (Sub im Eq (evs \u fv_tt A1) E (typ_mu A1) (typ_mu A2))...
+    { apply Sa_rec_eq_in with (L:=L)... }
+    pick_fresh X'. specialize_x_and_L X' L.
+    apply union_iff in H1. destruct H1.
+    +
+      destruct (H0 X)... analyze_binds H3. exists x...
+    +
+      get_well_form... pose proof WFS_dom _ _ H3. simpl in H7.
+      destruct (binds_In_inv _ X E)... destruct x. exists  i...
+      { apply bind_typ_WFS with (X:=X) (t:=t) in H3... exfalso... }
+  -
+    rewrite <- H0 in H1...
+Qed.
+
+
+Lemma notin_fv_subst_strong: forall X A B,
+    X \notin fv_tt A ->
+    X \notin fv_tt (subst_tt X A B).
+Proof with auto.
+  intros.
+  induction B...
+  -
+    simpl.
+    destruct (a == X)...
+Qed.
+
 Lemma generalized_unfolding_lemma:
   forall E1 E2 C D A B X im im_x evs cm,
     wf_env (E1 ++ E2) -> X \notin fv_tt C \u fv_tt D \u dom (E1 ++ E2) \u evs ->
@@ -1100,9 +1187,11 @@ Proof with auto.
 
   -
     (* Top Lt *)
-    simpl. exists Lt, emp. apply Sa_top_lt...
-    
-    admit. admit.
+    simpl. destruct (subst_tt X C A == typ_top).
+    + exists Eq, emp. rewrite e. apply Sa_top_eq...
+    + exists Lt, emp. apply Sa_top_lt...
+      apply subst_tt_wfs2 with (im:=im_x)...
+      { get_well_form. add_nil. apply WFS_weakening. destruct im, im_x... }
 
   -
     (* Var pos *)
@@ -1111,7 +1200,8 @@ Proof with auto.
       (* X0 == X *)
       subst. analyze_binds_uniq H0. inversion BindsTacVal;subst.
       exists cm', emp. destruct im_x;simpl in H3...
-      admit. admit. (* weakening *)
+      { add_nil. apply sub_weakening... }
+      { add_nil. apply sub_weakening... }
     +
       (* X0 != X *)
       destruct im.
@@ -1161,13 +1251,14 @@ Proof with auto.
       + destruct (AtomSetImpl.is_empty evs2') eqn:Eempty; try solve [inversion H5].
         apply is_not_empty_iff in Eempty. apply not_empty_has in Eempty.
         destruct Eempty as [X' Eempty].
-        assert (exists im_x', binds X' (bind_sub im_x') (E1 ++ E2)) by admit.
+        assert (exists im_x', binds X' (bind_sub im_x') (E1 ++ E2)).
+        { apply bind_ex_evs with (X:=X') in IHSub2'... }
         destruct H4 as [im_x' H4].
         pose proof posvar_false_simpl _ _ _ _ _ _ IHSub2' X' im_x' Eempty.
         exfalso. apply H6...
         
         apply posvar_calc_sign with (m2:=mode_xor im im_x) (m4:=im_x) ...
-        - admit.
+        - apply Sub_typePairR in H1_0...
         - hnf in H2. specialize (H2 X' im_x').
           assert (binds X' (bind_sub im_x') (E1 ++ X ~ bind_sub im_x ++ E2))...
           specialize (H2 H7).
@@ -1190,16 +1281,17 @@ Proof with auto.
         - intros Hc. subst.
           apply sub_evs_fv in IHSub2'...
           destruct_hypos.
-          admit.
-        + destruct (AtomSetImpl.is_empty evs1') eqn:Eempty; try solve [inversion H5].
+          pose proof notin_fv_subst_strong X D B2. fsetdec.
+      + destruct (AtomSetImpl.is_empty evs1') eqn:Eempty; try solve [inversion H5].
         apply is_not_empty_iff in Eempty. apply not_empty_has in Eempty.
         destruct Eempty as [X' Eempty].
-        assert (exists im_x', binds X' (bind_sub im_x') E2) by admit.
+        assert (exists im_x', binds X' (bind_sub im_x') (E1++E2)).
+        { apply bind_ex_evs with (X:=X') in IHSub1'... }
         destruct H4 as [im_x' H4].
         pose proof posvar_false_simpl _ _ _ _ _ _ IHSub1' X' im_x' Eempty.
         exfalso. apply H6...
         apply posvar_calc_sign with (m2:=mode_xor (flip_im im) im_x) (m4:=im_x) ...
-        - admit.
+        - apply Sub_typePairR in H1_...
         - hnf in H2. specialize (H2 X' im_x').
           assert (binds X' (bind_sub im_x') (E1 ++ X ~ bind_sub im_x ++ E2))...
           specialize (H2 H7).
@@ -1210,7 +1302,9 @@ Proof with auto.
           specialize (H2 H7).
           inversion H2;subst...
           rewrite <- xor_prop_4...
-        - apply soundness_posvar_simpl with (X:=X') (im_x:=im_x') in H3...
+        - rewrite_alist (nil ++ E2) in H3.
+          apply sub_weakening with (E3:=E1) in H3...
+          apply soundness_posvar_simpl with (X:=X') (im_x:=im_x') in H3...
           rewrite xor_prop_5.
           destruct im, im_x, im_x';
             simpl in H3;simpl;auto;
@@ -1222,72 +1316,8 @@ Proof with auto.
         - intros Hc. subst.
           apply sub_evs_fv in IHSub1'...
           destruct_hypos.
-          admit.
+          pose proof notin_fv_subst_strong X D B1. fsetdec.
     }
-
-      (* 
-      
-[[New neat idea]]
-
-      evs2' is not empty:
-
-      exists X' in (E1 ++ E2), 
-      ~ posvar X' A2[X-> mu a. C] B2[X-> mu a. D]
-
-      but  posvar X' A2 B2 <--------- requires evs to be empty?
-      and  posvar X' mu a. C mu a. D
-
-      uses [posvar_calc_sign]
-
-      gets posvar X' [X-> mu a. C]A2  [X-> mu a. D]B2
-
-      contradiction
-      
-      *)
-        
-
-        (* idea: 
-         Sub im Eq evs2' (E1 ++ E2) (subst_tt X (typ_mu C) A2) (subst_tt X (typ_mu D) B2)
-         
-         
-      (i) assume A2 = B2 and cm2 = Eq
-
-         (1) cm1 = Eq -> A1 = B1 -> X in A1 and B1, and C != D -> X notin A2 B2 ->
-             
-             [Sub im Eq evs2' (E1 ++ E2) (subst_tt X (typ_mu C) A2) (subst_tt X (typ_mu D) B2)]
-             becomes [Sub im Eq evs2' (E1 ++  X ~ bind_sub im_x ++ E2) A2 B2]
-             -> (deterministic results of the linear algorithm)
-             evs2' [=] evs2
-             -> exists X in evs2, ~ posvar X A2 B2 -> contradiction with well-bind-env condition
-
-          (2) cm1 = Lt -> evs2 is empty ->
-
-          need a lemma:
-          A <: B |> emp
-          C <: D |> emp
-          --------------
-          A[X->C] <: B[X->D] |> emp
-
-          evs2' should be empty, contradiction
-
-      (ii) assume A2 < B2 and cm2 = Lt
-            
-            (1) cm1 = Eq -> A1 = B1 -> X in A1 and B1, and C != D -> X notin A2 B2 ->
-              
-              [Sub im Eq evs2' (E1 ++ E2) (subst_tt X (typ_mu C) A2) (subst_tt X (typ_mu D) B2)]
-              becomes [Sub im Eq evs2' (E1 ++  X ~ bind_sub im_x ++ E2) A2 B2]
-              -> (deterministic results of the linear algorithm)
-              Lt != Eq -> contradiction
-  
-            (2) cm1 = Lt -> evs2 is empty ->
-
-
-            need another lemma: if Lt then emp,
-            to get a contradiction that evs2' should be empty
-
-
-          *)
-
 
     exists c, (union evs1' evs2').
     apply Sa_arrow with (cm1:=cm1') (cm2:=cm2')...
@@ -1295,6 +1325,9 @@ Proof with auto.
   -
     (* rec-lt *)
     simpl.
+    assert (Ewf: Sub im Lt evs (E1 ++ X ~ bind_sub im_x ++ E2) (typ_mu A1) (typ_mu A2)).
+    { apply Sa_rec_lt with (L:=L)... }
+
     pick_fresh X'.
     specialize_x_and_L X' L.
     destruct (H0 im_x X E2 (X' ~ bind_sub im ++ E1)) with (cm' := cm') (C:=C) (D:=D) as [cm1' [evs1' IHSub1']]...
@@ -1329,9 +1362,9 @@ Proof with auto.
         }
       }
     }
-    rewrite <- subst_tt_open_tt_var in IHSub1'... 2:{ admit. }
+    rewrite <- subst_tt_open_tt_var in IHSub1'... 2:{ get_type. destruct im, im_x... }
     rewrite <- subst_tt_open_tt_var with (P:=( D)) in IHSub1'... 
-    2:{ admit. }
+    2:{ get_type. destruct im, im_x... }
     destruct cm1'. 2:{ (* TODO: contradiction on Lt/Eq 
     
     !!!! may relies on syntactic equality??
@@ -1348,7 +1381,16 @@ Proof with auto.
       rewrite IHSub1'.
       exists Eq.
       apply Msub_refl...
-      admit. admit.
+      { get_type. inversion H7;subst...
+        apply type_mu with (L:=L \u {{X}} \u L0). intros.
+        rewrite subst_tt_open_tt_var... 2:{ get_type. destruct im, im_x... }
+        apply subst_tt_type... { get_type. destruct im, im_x... } 
+      }
+      { get_well_form. replace (typ_mu (subst_tt X D A2)) with (subst_tt X D (typ_mu A2))...
+        apply subst_tt_wfs2 with (im:=im_x)...
+        add_nil. apply WFS_weakening... destruct im,im_x...
+      }
+
       (* apply subst_reverse in IHSub1'...
       2:{ admit. }
       2:{ admit. }
@@ -1365,10 +1407,10 @@ Proof with auto.
           apply mem_iff in Eevs.
           pose proof posvar_false_simpl _ _ _ _ _ _ IHSub1' X' im Eevs.
           exfalso. apply H6... rewrite xor_prop_refl.
-          rewrite subst_tt_open_tt_var... 2:{ admit. }
-          rewrite subst_tt_open_tt_var... 2:{ admit. }
+          rewrite subst_tt_open_tt_var... 2:{ get_type. destruct im, im_x... }
+          rewrite subst_tt_open_tt_var... 2:{ get_type. destruct im, im_x... }
           apply posvar_calc_sign with (m2:=mode_xor im im_x) (m4:=Pos)...
-          + admit.
+          + apply Sub_typePairR in H1...
           + apply soundness_posvar_simpl with (X:=X') (im_x:=im) in H1...
             rewrite xor_prop_refl in H1...
           + specialize (H2 X im_x).
@@ -1452,8 +1494,8 @@ Proof with auto.
         rewrite_alist (nil ++ X0 ~ bind_sub im ++ E1 ++ E2).
         replace evs1' with (if AtomSetImpl.mem X' evs1' then AtomSetImpl.add X0 (remove X' evs1') else evs1')...
         apply sub_replacing_var...
-        { rewrite subst_tt_open_tt_var... 2:{ admit. }
-          rewrite subst_tt_open_tt_var... { admit. }
+        { rewrite subst_tt_open_tt_var... 2:{ get_type. destruct im, im_x... }
+          rewrite subst_tt_open_tt_var... { get_type. destruct im, im_x... }
         }
         { solve_notin... }
         { constructor...  }
@@ -1463,7 +1505,7 @@ Proof with auto.
           pose proof posvar_false_simpl _ _ _ _ _ _ IHSub1' X' im Ex'.
           exfalso. apply H6... rewrite xor_prop_refl.
           apply posvar_calc_sign with (m2:=mode_xor im im_x) (m4:=Pos)...
-          + admit.
+          + apply Sub_typePairR in H1...
           + apply soundness_posvar_simpl with (X:=X') (im_x:=im) in H1...
             rewrite xor_prop_refl in H1...
           + specialize (H2 X im_x).
@@ -1502,8 +1544,8 @@ Proof with auto.
         rewrite_alist (nil ++ X0 ~ bind_sub im ++ E1 ++ E2).
         replace evs1' with (if AtomSetImpl.mem X' evs1' then AtomSetImpl.add X0 (remove X' evs1') else evs1')...
         apply sub_replacing_var...
-        { rewrite subst_tt_open_tt_var... 2:{ admit. }
-          rewrite subst_tt_open_tt_var... { admit. }
+        { rewrite subst_tt_open_tt_var... 2:{ get_type. destruct im, im_x... }
+          rewrite subst_tt_open_tt_var... { get_type. destruct im, im_x... }
         }
         { solve_notin... }
         { constructor...  }
@@ -1513,7 +1555,7 @@ Proof with auto.
           pose proof posvar_false_simpl _ _ _ _ _ _ IHSub1' X' im Ex'.
           exfalso. apply H6... rewrite xor_prop_refl.
           apply posvar_calc_sign with (m2:=mode_xor im im_x) (m4:=Pos)...
-          + admit.
+          + apply Sub_typePairR in H1...
           + apply soundness_posvar_simpl with (X:=X') (im_x:=im) in H1...
             rewrite xor_prop_refl in H1...
           + specialize (H2 X im_x).
@@ -1550,15 +1592,20 @@ Proof with auto.
   -
     (* rec-eq-notin *)
     simpl.
+    assert (Ewf: Sub im Eq (evs `union` fv_tt A1) (E1 ++ X ~ bind_sub im_x ++ E2) (typ_mu A1) (typ_mu A2)).
+    { apply Sa_rec_eq_in with (L:=L)... }
     pick_fresh X'.
     specialize_x_and_L X' L.
     assert (A1 = A2). { apply Msub_eq_sem in H1... apply open_tt_fresh_eq_inv in H1... }
     subst. rewrite <- !subst_tt_fresh...
     exists Eq.
     apply Msub_refl...
-    admit.
-    admit.
-    (* Tricky?? *)
+    { get_type... }
+    { get_well_form... 
+      replace (typ_mu A2) with (subst_tt X typ_top (typ_mu A2))...
+      { apply subst_tt_wfs2 with (im:=im_x)... }
+      rewrite <- subst_tt_fresh...
+    }
 
   -
     (* proper *)
@@ -1566,7 +1613,7 @@ Proof with auto.
     { rewrite H0... }
     exists cm1', evs1'...
 
-Admitted.
+Qed.
 
 
 (* but one problem of making C and D equal is that
@@ -1626,9 +1673,9 @@ Proof with auto.
 
       apply Msub_refl_inv in H0...
       apply subst_reverse in H0...
-      2:{ admit. }
-      2:{ admit. }
-      2:{ admit. }
+      2:{ apply Sub_typePairR in H... }
+      2:{ get_type... }
+      2:{ get_type... }
       destruct_hypos.
       subst...
       apply Msub_lt_not_eq in H...
@@ -1648,7 +1695,7 @@ Proof with auto.
   }
   apply IHSub...
   rewrite H0. rewrite Hemp. reflexivity. 
-Admitted. 
+Qed.
 
 
 
@@ -1663,26 +1710,23 @@ Proof with auto.
   apply Msub_eq_sem in Hq.
   inversion Hq;subst...
   pose proof Msub_refl empty Pos (open_tt B (typ_mu B))...
+  assert (WFS empty (open_tt B (typ_mu B))).
+  (* destruct H1...
+  { get_type. inversion H2;subst... pick_fresh X.
+    replace (open_tt B (typ_mu B)) with (subst_tt X (typ_mu B) (open_tt B X))...
+    2:{rewrite subst_tt_open_tt... rewrite <- subst_tt_fresh... simpl. rewrite eq_dec_refl... }
+    apply subst_tt_type; get_type...
+  } *)
+  { get_well_form. inversion H2;subst... pick_fresh X.
+    replace (open_tt B (typ_mu B)) with (subst_tt X (typ_mu B) (open_tt B X))...
+    2:{rewrite subst_tt_open_tt... rewrite <- subst_tt_fresh... simpl. rewrite eq_dec_refl... get_type... }
+    add_nil.
+    apply subst_tt_wfs2 with (im:=im)... apply H6... }
   destruct H1...
-  { admit. }
-  { admit. }
+  { get_type... }
   assert (Hq':=H1).
-  apply sub_evs_fv in H1. assert (WFS empty (open_tt B (typ_mu B))) by admit.
+  apply sub_evs_fv in H1.
   apply WFS_dom in H2.
   assert (x[=]emp) by fsetdec.
   rewrite H3 in Hq'...
-Admitted.
-
-
-(* Expected lemma:
-
-equiv (A [x -> C]) (B [x -> D]) -> 
-equiv A B /\ (X in A B -> equiv C D)
-
-
-no?
-
-equiv (nat [X -> nat]) (X [X -> nat]) ->
-equiv nat X [x]
-
-*)
+Qed.
