@@ -101,3 +101,12 @@ let deep_subtyp_pos_mul_gen (depth: int) b1 b2 =
   let t1 = typ_genh 0 depth b1 Nat in
   let t2 = typ_genh 0 depth b2 Nat in
   (t1, t2)
+
+
+let rec composite_gen (width: int) (depth: int) b1 b2 =
+  let gen_funcs = [ deep_subtyp_gen; deep_subtyp_pos_gen; deep_subtyp_pos_mul_gen ] in
+  let gen_func1 = List.nth gen_funcs (Random.int (List.length gen_funcs)) in
+  if width = 0 then gen_func1 depth b1 b2 else
+  let (t1, t2) = gen_func1 depth b1 b2 in
+  let (t3, t4) = composite_gen (width - 1) depth b1 b2 in
+  (Prod (t1, t3), Prod (t2, t4))
