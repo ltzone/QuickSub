@@ -26,6 +26,31 @@ let range a b =
 let rev_concat_map f xs = List.fold_right List.rev_append (List.rev_map f xs) []
 (* The tail-recursive version of concat map *)
 
+
+(* rename a type so that no parallel binders use the same index *)
+let rec lev_typh (i: int) (env: (int * int) list) t : int * typ =
+  match t with
+  | Nat | Real | Top -> i, t
+  | Var j -> i, Var (List.assoc j env)
+  | Prod (t1, t2) -> 
+      let i', t1' = lev_typh i env t1 in
+      let i'', t2' = lev_typh i' env t2 in
+      i'', Prod (t1', t2')
+  | Sum (t1, t2) -> 
+      let i', t1' = lev_typh i env t1 in
+      let i'', t2' = lev_typh i' env t2 in
+      i'', Sum (t1', t2')
+  | Fun (t1, t2) -> 
+      let i', t1' = lev_typh i env t1 in
+      let i'', t2' = lev_typh i' env t2 in
+      i'', Fun (t1', t2')
+  | Rec (j, t) -> 
+      let new_i = i + 1 in
+      let i', t' = lev_typh new_i ((j, i) :: env) t in
+      i', Rec (i, t')
+
+let lev_typ t = snd (lev_typh 0 [] t)
+
 let rec typgenh (depth: int) (max_var: int) : typ list =
   if depth = 0 then 
       ([Nat; Real] @ (List.map (fun i -> Var i) (range 0 max_var)))
@@ -40,8 +65,11 @@ let rec typgenh (depth: int) (max_var: int) : typ list =
         List.rev_append st1_comb st2_comb
     )
     
+
+
+
 let typgen (depth: int) = 
-    typgenh depth 0
+   List.rev_map lev_typ (typgenh depth 0)
 
 let ascii n = String.make 1 (Char.chr (Char.code 'a' + n))
 
