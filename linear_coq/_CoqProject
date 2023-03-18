@@ -5,15 +5,5 @@ Infra.v
 Variance.v
 PosVar.v
 LinearRule.v
-LinearSubst.v
-FiniteUnfolding.v
+Transitivity.v
 Typesafety.v
-DoubleUnfolding.v
-AmberBase.v
-AmberSoundness.v
-PositiveBase.v
-PositiveSubtyping.v
-AmberCompleteness.v
-NominalUnfolding.v
-AnchorUnfolding.v
-Decidability.v

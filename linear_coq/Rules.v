@@ -288,9 +288,10 @@ Inductive typing : env -> exp -> typ -> Prop :=
  | typing_unfold : forall G T e,
      typing G e (typ_mu T) ->
      typing G (exp_unfold (typ_mu T) e)  (open_tt T  (typ_mu T))
- | typing_sub: forall G T e S ,
+ | typing_sub: forall G T e S evs cm,
      typing G e S ->
-     Sub Pos Lt emp G S T ->
+     Sub Pos cm evs G S T ->
+     (* because we do not want to apply e:A, |-(+) A <: B and |-(-) B <: C and get e:C, which breaks the transitivity *)
      typing G e T.
 
 Inductive value : exp -> Prop :=
