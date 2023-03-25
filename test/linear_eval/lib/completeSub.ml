@@ -34,6 +34,7 @@ let rec init (t:typ)
       if b then () else Array.set ut n (init t ut u false);
       CEVar n
   | Top -> failwith "the completeness algorithm does not allow Top"
+  | Rcd _ -> failwith "the completeness algorithm does not allow records"
 
 let sub (t1: typ) (t2: typ) =
   let m = numVars t1 in

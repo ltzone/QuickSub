@@ -18,6 +18,7 @@ let rec wf_type (e: env) (x:typ) (i: int) : bool =
       let i' = i + 1 in
       let e' = (j, i') :: e in
       wf_type e' a i'
+  | _ -> false
 
 let rec subst_var (i: int) (x: typ) (y: typ) : typ =
   match y with
@@ -32,6 +33,7 @@ let rec subst_var (i: int) (x: typ) (y: typ) : typ =
   | Rec (j, a) when i = j -> Rec (j, a)
   | Rec (j, a) ->
       Rec (j, subst_var i x a)
+  | _ -> failwith "subst_var: not implemented"
 
 let rec subh (i: int) (e:env) (x:typ) (y:typ) : bool =
   match (x, y) with

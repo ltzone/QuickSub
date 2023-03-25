@@ -11,6 +11,7 @@
 type typ = Nat | Real | Prod of typ * typ | Sum of typ * typ 
          | Fun of typ * typ | Rec of int * typ | Var of int
          | Top
+         | Rcd of (string * typ) list
 
 
 let rec numVars (t: typ) = match t with 
@@ -48,6 +49,11 @@ let rec lev_typh (i: int) (env: (int * int) list) t : int * typ =
       let new_i = i + 1 in
       let i', t' = lev_typh new_i ((j, i) :: env) t in
       i', Rec (i, t')
+  | Rcd fs -> 
+      let i', fs' = List.fold_left (fun (i, fs) (f, t) -> 
+        let i', t' = lev_typh i env t in
+        i', (f, t') :: fs) (i, []) fs in
+      i', Rcd (List.rev fs')
 
 let lev_typ t = snd (lev_typh 0 [] t)
 
@@ -82,6 +88,7 @@ let rec string_of_typ t = match t with
   | Rec (i, t) -> "(μ " ^ ascii i ^ ". " ^ string_of_typ t ^ ")"
   | Var i -> ascii i
   | Top -> "T"
+  | Rcd fs -> "{" ^ String.concat ", " (List.map (fun (f, t) -> f ^ ": " ^ string_of_typ t) fs) ^ "}"
 
 let print_typ t = print_string (string_of_typ t)
 

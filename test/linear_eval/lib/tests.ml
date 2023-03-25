@@ -71,3 +71,22 @@ let test6 (n:int) =
 let test7 (n:int) = 
   let t1, t2 = composite_gen 10 (n / 10) Real Nat in
   test_wrapper n t1 t2
+
+
+let f = LinearSubExt.subh LinearSubExt.VMap.empty LinearSubExt.Pos
+
+
+(* test rcd subtyping *)
+let t1 = Rec (0,(Rcd [("x", Nat); ("y", Nat)]))
+let t2 = Rec (0,(Rcd [("x", Top); ("y", Nat)]))
+let t3 = Rec (0,(Rcd [("x", Nat); ("y", Top)]))
+let t4 = Rec (0,(Rcd [("y", Top)]))
+
+let t5 = Rec (0,(Rcd [("x", Nat); ("y", Nat); ("z", Nat)]))
+
+
+let t6 = Rec (0,(Rcd [("x", Fun (Var 0, Nat)); ("y", Nat); ("z", Nat)]))
+
+let t7 = Rec (0,(Rcd [("x", Fun (Var 0, Nat)); ("z", Top); ("y", Nat)]))
+
+
