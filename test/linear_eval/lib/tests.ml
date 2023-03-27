@@ -74,9 +74,15 @@ let test7 (n:int) =
 
 let test_rcd (n:int) = 
   (* Real ->a , a -> Nat <:  Real -> a, a -> Real *)
-  let t1, t2 = record_gen n Real Real Nat Real  in
+  let t1, t2 = record_gen n Real Real Real Real  in
   test_wrapper n t1 t2
 
+
+let test_rcd_pos (n:int) = 
+  (* Real ->a  <:  Real -> a *)
+  let t1, t2 = record_gen_pos n Real Nat   in
+  test_wrapper n t1 t2
+  
 
 (* let f = LinearSubExt.subh LinearSubExt.VMap.empty LinearSubExt.Pos *)
 let f x y = 

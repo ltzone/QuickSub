@@ -158,7 +158,20 @@ let record_gen width b1_contra b1_conv b2_contra b2_conv =
     if width = 0 then [], [] else
       let f = make_str_label width in
       let fs1, fs2 = helper (width - 1) in
-      ((f, Fun (b1_contra, Var 0)) ::  (f ^ "'", Fun (Var 0, b1_conv)) :: fs1, 
-        (f, Fun (b2_contra, Var 0)) ::  (f ^ "'", Fun (Var 0, b2_conv)) :: fs2) in
+      ((f, Fun (b1_conv, Var 0)) ::  (f ^ "'", Fun (Var 0, b1_contra)) :: fs1, 
+        (f, Fun (b2_conv, Var 0)) ::  (f ^ "'", Fun (Var 0, b2_contra)) :: fs2) in
   let fs1, fs2 = helper width in
   (Rec (0, Rcd fs1), Rec (0, Rcd fs2))
+
+
+
+let record_gen_pos width b1_conv b2_conv = 
+  let rec helper (width: int) : ((string * typ) list * (string * typ) list) =
+    if width = 0 then [], [] else
+      let f = make_str_label width in
+      let fs1, fs2 = helper (width - 1) in
+      ( (f ^ "'", Fun (b1_conv, Var 0)) :: fs1, 
+        (f ^ "'", Fun (b2_conv, Var 0)) :: fs2) in
+  let fs1, fs2 = helper width in
+  (Rec (0, Rcd fs1), Rec (0, Rcd fs2))
+  
