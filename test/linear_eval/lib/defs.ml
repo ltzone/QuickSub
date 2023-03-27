@@ -59,13 +59,14 @@ let lev_typ t = snd (lev_typh 0 [] t)
 
 let rec typgenh (depth: int) (max_var: int) : typ list =
   if depth = 0 then 
-      ([Nat; Real] @ (List.map (fun i -> Var i) (range 0 max_var)))
+      ([Nat; Top] @ (List.map (fun i -> Var i) (range 0 max_var)))
   else
     (let st1 = typgenh (depth - 1) max_var in
       let st2 = typgenh (depth - 1) (max_var + 1) in
         let st1_comb = rev_concat_map 
             (fun t1 -> rev_concat_map (fun t2 -> [
-              (* Prod (t1, t2); Sum (t1, t2);  *)
+              (* Prod (t1, t2);  *)
+              (* Sum (t1, t2);  *)
             Fun (t1, t2)]) st1) st1 in
         let st2_comb = rev_concat_map (fun t -> [Rec (max_var, t)]) st2 in
         List.rev_append st1_comb st2_comb
