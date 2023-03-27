@@ -2,7 +2,7 @@ open Defs;;
 
 let test_wrapper ?(print=false) n t1 t2  = 
   let linear_start = Unix.gettimeofday () in
-  let linear_res = LinearSub.sub t1 t2 in
+  let linear_res = LinearSubExt.sub t1 t2 in
   let linear_end = Unix.gettimeofday () in
   let linear2_start = Unix.gettimeofday () in
   let linear2_res = LinearSubOpt.sub t1 t2 in
@@ -72,8 +72,17 @@ let test7 (n:int) =
   let t1, t2 = composite_gen 10 (n / 10) Real Nat in
   test_wrapper n t1 t2
 
+let test_rcd (n:int) = 
+  (* Real ->a , a -> Nat <:  Real -> a, a -> Real *)
+  let t1, t2 = record_gen n Real Real Nat Real  in
+  test_wrapper n t1 t2
 
-let f = LinearSubExt.subh LinearSubExt.VMap.empty LinearSubExt.Pos
+
+(* let f = LinearSubExt.subh LinearSubExt.VMap.empty LinearSubExt.Pos *)
+let f x y = 
+  (* let fresh_i = max (numVars x) (numVars y) in
+  AmberSub.subh fresh_i [] x y *)
+  CompleteSub.sub x y
 
 
 (* test rcd subtyping *)

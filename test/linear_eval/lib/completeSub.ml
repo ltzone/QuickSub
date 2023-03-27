@@ -3,11 +3,13 @@ open Defs
 type cetyp = CENat | CEReal | CEFun of cetyp * cetyp
            | CEVar of int | CEProd of cetyp * cetyp * bool
            | CESum of cetyp * cetyp * bool
+           | CERcd of (string * cetyp) list * bool
 
 
 let isUninhabited (t: cetyp) (u: bool array) : bool =
   match t with
   | CEProd (_, _, b) | CESum (_, _, b) -> b
+  | CERcd (_, b) -> b
   | CEVar n -> Array.get u n
   | _ -> false
 
@@ -34,7 +36,9 @@ let rec init (t:typ)
       if b then () else Array.set ut n (init t ut u false);
       CEVar n
   | Top -> failwith "the completeness algorithm does not allow Top"
-  | Rcd _ -> failwith "the completeness algorithm does not allow records"
+  | Rcd fs ->
+      let fs' = List.map (fun (s, t) -> (s, init t ut u b)) fs in
+        CERcd (fs', List.exists (fun (_, t) -> isUninhabited t u) fs')
 
 let sub (t1: typ) (t2: typ) =
   let m = numVars t1 in
@@ -70,6 +74,18 @@ let sub (t1: typ) (t2: typ) =
           if s1.(m).(n) then true else
             (s1.(m).(n) <- true;
              subh (ut1.(m), ut1, u1) (ut2.(n), ut2, u2) (s1, s2))
+      | (CERcd (fs1, _), CERcd (fs2, _)) -> (* S-Rcd *)
+          let fs1 = List.sort (fun (f, _) (g, _) -> String.compare f g) fs1 in
+          let fs2 = List.sort (fun (f, _) (g, _) -> String.compare f g) fs2 in
+          let rec subh' fs1 fs2 =
+            match (fs1, fs2) with
+            | ([], []) -> true
+            | ((f, t1) :: fs1, (g, t2) :: fs2) when f = g ->
+                  subh (t1, ut1, u1) (t2, ut2, u2) (s1, s2) && subh' fs1 fs2
+            | (_ :: fs1, fs2) -> subh' fs1 fs2
+            | _, _ -> false
+            in
+          subh' fs1 fs2
       | _ -> false
   in
     subh (cet1, ut1, u1) (cet2, ut2, u2) (s1, s2)

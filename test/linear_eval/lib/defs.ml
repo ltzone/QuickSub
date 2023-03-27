@@ -145,3 +145,20 @@ let rec composite_gen (width: int) (depth: int) b1 b2 =
   let (t1, t2) = gen_func1 depth b1 b2 in
   let (t3, t4) = composite_gen (width - 1) depth b1 b2 in
   (Prod (t1, t3), Prod (t2, t4))
+
+let rec make_str_label (i: int) =
+  let remainder = i mod 26 in
+  let quotient = i / 26 in
+  if quotient = 0 then ascii remainder else
+    (ascii remainder) ^ (make_str_label quotient)
+
+
+let record_gen width b1_contra b1_conv b2_contra b2_conv = 
+  let rec helper (width: int) : ((string * typ) list * (string * typ) list) =
+    if width = 0 then [], [] else
+      let f = make_str_label width in
+      let fs1, fs2 = helper (width - 1) in
+      ((f, Fun (b1_contra, Var 0)) ::  (f ^ "'", Fun (Var 0, b1_conv)) :: fs1, 
+        (f, Fun (b2_contra, Var 0)) ::  (f ^ "'", Fun (Var 0, b2_conv)) :: fs2) in
+  let fs1, fs2 = helper width in
+  (Rec (0, Rcd fs1), Rec (0, Rcd fs2))

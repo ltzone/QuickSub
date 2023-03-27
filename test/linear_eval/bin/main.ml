@@ -1,5 +1,5 @@
-(* let main = 
-  List.iter Tests.test7 [10;50;100;200;500;1000;2000;3000;4000;5000;6000;7000;8000;9000;10000] *)
+let main = 
+  List.iter Tests.test_rcd [10;50;100;200;500;1000;2000;3000;4000;5000;6000;7000;8000;9000;10000]
 
 (* let t1, t2 = Defs.deep_subtyp_gen 2 Nat Real in
 LinearSubOpt.sub t1 t2 *)
@@ -8,8 +8,8 @@ LinearSubOpt.sub t1 t2 *)
 
 
 (* Test random *)
-
-(* let main = 
+(* 
+let main = 
   let tys = Defs.typ_pair_gen 3 in
   List.iter (
     fun (t1, t2) -> 
