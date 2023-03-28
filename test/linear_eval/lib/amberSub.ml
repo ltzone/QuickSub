@@ -73,6 +73,7 @@ let rec subh (i: int) (e:env) (x:typ) (y:typ) : bool =
         | _, _ -> false
       in
       subh' fs gs
+      (* todo: add equivalent to refl *)
   | _, _ -> false
 
 
