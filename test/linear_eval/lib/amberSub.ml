@@ -35,6 +35,33 @@ let rec subst_var (i: int) (x: typ) (y: typ) : typ =
       Rec (j, subst_var i x a)
   | Rcd fs -> Rcd (List.map (fun (l, t) -> (l, subst_var i x t)) fs)
 
+let rec equiv_type (x:typ) (y:typ) : bool =
+  match (x, y) with
+  | (Nat, Nat) -> true
+  | (Real, Real) -> true
+  | (Top, Top) -> true
+  | (Fun (a1, a2), Fun (b1, b2)) ->
+      equiv_type a1 b1 && equiv_type a2 b2
+  | (Prod (a1, a2), Prod (b1, b2)) ->
+      equiv_type a1 b1 && equiv_type a2 b2
+  | (Sum (a1, a2), Sum (b1, b2)) ->
+      equiv_type a1 b1 && equiv_type a2 b2
+  | (Var i, Var j) -> i = j
+  | (Rec (j, a), Rec (k, b)) when j = k -> equiv_type a b
+  | (Rcd fs, Rcd gs) ->
+      let fs = List.sort (fun (l1, _) (l2, _) -> compare l1 l2) fs in
+      let gs = List.sort (fun (l1, _) (l2, _) -> compare l1 l2) gs in
+      let rec equiv_type' fs gs =
+        match (fs, gs) with
+        | [], [] -> true
+        | ((l, f) :: fs, (l', g) :: gs) when l = l' ->
+            equiv_type f g && equiv_type' fs gs
+        | _, _ -> false
+      in
+      equiv_type' fs gs
+  | _, _ -> false
+
+
 let rec subh (i: int) (e:env) (x:typ) (y:typ) : bool =
   match (x, y) with
   | (Nat, Nat) -> true
@@ -55,7 +82,7 @@ let rec subh (i: int) (e:env) (x:typ) (y:typ) : bool =
       let res2 = subh i e a2 b2 in
       res1 && res2
   | (Var i, Var j) -> List.mem (i, j) e
-  | (Rec (j, a), Rec (k, b)) when j = k  && a = b -> wf_type e (Rec (j, a)) i
+  | (Rec (j, a), Rec (k, b)) when j = k  && equiv_type a b -> wf_type e (Rec (j, a)) i
   | (Rec (j, a), Rec (k, b)) when j = k ->
       let j' = i + 1 in
       let k' = i + 2 in
