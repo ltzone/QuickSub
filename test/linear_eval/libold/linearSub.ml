@@ -36,7 +36,7 @@ let rec fv (t:typ) =
   | Var i -> VSet.singleton i
   | Rec (i, a) -> VSet.remove i (fv a)
   | Top -> VSet.empty
-  | Rcd fs -> TMap.fold (fun _ t s -> VSet.union s (fv t)) fs VSet.empty
+  | _ -> failwith "fv: not implemented"
 
 
 
@@ -74,34 +74,6 @@ let rec subh (e:env) (m:mode) (x:typ) (y:typ) : (cmp * VSet.t) option =
         match c with
         | Lt -> if VSet.mem i l then None else Some (Lt, VSet.remove i l)
         | Eq -> if VSet.mem i l then Some (Eq, VSet.remove i (VSet.union (fv a) l)) else Some (Eq, l))
-  | (Rcd fs, Rcd gs) ->
-      TMap.fold (fun g t2 prev_res ->
-        Option.bind (TMap.find_opt g fs) (fun t1 ->
-          Option.bind (subh e m t1 t2) (fun (c, l) ->
-            Option.bind prev_res (fun (c', l') ->
-              match compose_cmp (c, l) (c', l') with
-              | Some c -> Some (c, VSet.union l l')
-              | None -> None))
-        )) gs (Some (Eq, VSet.empty))
-      (* let rec subh' (e:env) (m:mode) (fs:(string * typ) list) (gs:(string * typ) list) : (cmp * VSet.t) option =
-        match (fs, gs) with
-        | ([], []) -> Some (Eq, VSet.empty)
-        | ((f, a) :: fs, (g, b) :: gs) when f = g ->
-          Option.bind (subh e m a b) (fun (c, l) ->
-            Option.bind (subh' e m fs gs) (fun (c', l') ->
-              match compose_cmp (c, l) (c', l') with
-              | Some c -> Some (c, VSet.union l l')
-              | None -> None))
-        | ((_, _) :: fs, gs) ->
-          Option.bind (subh' e m fs gs) (fun (c, l) ->
-            match c with
-            | Lt -> Some (Lt, l)
-            | Eq -> Some (Lt, l)) (* what to do here, do we need to union fv b  *)
-        | ( _, _ ) -> None
-      in
-      let fs = List.sort (fun (f, _) (g, _) -> String.compare f g) fs in
-      let gs = List.sort (fun (f, _) (g, _) -> String.compare f g) gs in
-      subh' e m fs gs *)
   | _, _ -> None
     
 let sub (x:typ) (y:typ) : bool =

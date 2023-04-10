@@ -3,7 +3,7 @@ open Defs
 type cetyp = CENat | CEReal | CEFun of cetyp * cetyp
            | CEVar of int | CEProd of cetyp * cetyp * bool
            | CESum of cetyp * cetyp * bool
-           | CERcd of (cetyp TMap.t) * bool
+           | CERcd of (string * cetyp) list * bool
 
 
 let isUninhabited (t: cetyp) (u: bool array) : bool =
@@ -37,8 +37,8 @@ let rec init (t:typ)
       CEVar n
   | Top -> failwith "the completeness algorithm does not allow Top"
   | Rcd fs ->
-      let fs' = TMap.map (fun t -> (init t ut u b)) fs in
-        CERcd (fs', TMap.exists (fun _ t -> isUninhabited t u) fs')
+      let fs' = List.map (fun (s, t) -> (s, init t ut u b)) fs in
+        CERcd (fs', List.exists (fun (_, t) -> isUninhabited t u) fs')
 
 let sub (t1: typ) (t2: typ) =
   let m = numVars t1 in
@@ -75,11 +75,6 @@ let sub (t1: typ) (t2: typ) =
             (s1.(m).(n) <- true;
              subh (ut1.(m), ut1, u1) (ut2.(n), ut2, u2) (s1, s2))
       | (CERcd (fs1, _), CERcd (fs2, _)) -> (* S-Rcd *)
-          TMap.for_all (fun g t2 -> TMap.mem g fs1 &&
-                                    subh (TMap.find g fs1, ut1, u1) (t2, ut2, u2) (s1, s2))
-                       fs2
-
-(* 
           let fs1 = List.sort (fun (f, _) (g, _) -> String.compare f g) fs1 in
           let fs2 = List.sort (fun (f, _) (g, _) -> String.compare f g) fs2 in
           let rec subh' fs1 fs2 =
@@ -90,7 +85,7 @@ let sub (t1: typ) (t2: typ) =
             | (_ :: fs1, fs2) -> subh' fs1 fs2
             | _, _ -> false
             in
-          subh' fs1 fs2 *)
+          subh' fs1 fs2
       | _ -> false
   in
     subh (cet1, ut1, u1) (cet2, ut2, u2) (s1, s2)

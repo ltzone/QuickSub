@@ -5,10 +5,10 @@
 LinearSubOpt.sub t1 t2 *)
 
 
-
+let main = RcdTest.test1
 
 (* Test random *)
-
+(* 
 let main = 
   let tys = Defs.typ_pair_gen 3 in
   (* print_endline (string_of_int (List.length tys)); *)
@@ -28,4 +28,4 @@ let main =
         (* print_endline (Defs.string_of_typ ((AmberSub.lift_vars (Defs.numVars t1) t2))); *)
         Printf.printf "Error: %s <: %s, \t Amber:%s \t Linear:%s\n" (Defs.string_of_typ t1) (Defs.string_of_typ t2) (string_of_bool res1) (string_of_bool res2))
   ) tys
-
+ *)

@@ -18,7 +18,7 @@ let rec wf_type (e: env) (x:typ) (i: int) : bool =
       let i' = i + 1 in
       let e' = (j, i') :: e in
       wf_type e' a i'
-  | Rcd fs -> TMap.for_all (fun _ t -> wf_type e t i) fs
+  | Rcd fs -> List.for_all (fun (_, t) -> wf_type e t i) fs
 
 let rec subst_var (i: int) (x: typ) (y: typ) : typ =
   match y with
@@ -33,7 +33,7 @@ let rec subst_var (i: int) (x: typ) (y: typ) : typ =
   | Rec (j, a) when i = j -> Rec (j, a)
   | Rec (j, a) ->
       Rec (j, subst_var i x a)
-  | Rcd fs -> Rcd (TMap.map (fun t ->  subst_var i x t) fs)
+  | Rcd fs -> Rcd (List.map (fun (l, t) -> (l, subst_var i x t)) fs)
 
 let rec equiv_type (x:typ) (y:typ) : bool =
   match (x, y) with
@@ -49,8 +49,7 @@ let rec equiv_type (x:typ) (y:typ) : bool =
   | (Var i, Var j) -> i = j
   | (Rec (j, a), Rec (k, b)) when j = k -> equiv_type a b
   | (Rcd fs, Rcd gs) ->
-      TMap.equal equiv_type fs gs
-      (* let fs = List.sort (fun (l1, _) (l2, _) -> compare l1 l2) fs in
+      let fs = List.sort (fun (l1, _) (l2, _) -> compare l1 l2) fs in
       let gs = List.sort (fun (l1, _) (l2, _) -> compare l1 l2) gs in
       let rec equiv_type' fs gs =
         match (fs, gs) with
@@ -59,7 +58,7 @@ let rec equiv_type (x:typ) (y:typ) : bool =
             equiv_type f g && equiv_type' fs gs
         | _, _ -> false
       in
-      equiv_type' fs gs *)
+      equiv_type' fs gs
   | _, _ -> false
 
 
@@ -90,8 +89,7 @@ let rec subh (i: int) (e:env) (x:typ) (y:typ) : bool =
       let e' = (j', k') :: e in
       subh k' e' (subst_var j (Var j') a) (subst_var k (Var k') b)
   | Rcd fs, Rcd gs ->
-      TMap.for_all (fun l g -> TMap.mem l fs && subh i e (TMap.find l fs) g) gs
-      (* let fs = List.sort (fun (l1, _) (l2, _) -> compare l1 l2) fs in
+      let fs = List.sort (fun (l1, _) (l2, _) -> compare l1 l2) fs in
       let gs = List.sort (fun (l1, _) (l2, _) -> compare l1 l2) gs in
       let rec subh' fs gs =
         match (fs, gs) with
@@ -101,7 +99,7 @@ let rec subh (i: int) (e:env) (x:typ) (y:typ) : bool =
         | ( _ :: fs, gs) -> subh' fs gs
         | _, _ -> false
       in
-      subh' fs gs *)
+      subh' fs gs
       (* todo: add equivalent to refl *)
   | _, _ -> false
 

@@ -92,17 +92,18 @@ let f x y =
   AmberSub.subh fresh_i [] x y *)
   CompleteSub.sub x y
 
+
 (* test rcd subtyping *)
-let t1 = Rec (0,(Rcd (map_of_list [("x", Nat); ("y", Nat)])))
-let t2 = Rec (0,(Rcd (map_of_list [("x", Top); ("y", Nat)])))
-let t3 = Rec (0,(Rcd (map_of_list [("x", Nat); ("y", Top)])))
-let t4 = Rec (0,(Rcd (map_of_list [("y", Top)])))
+let t1 = Rec (0,(Rcd [("x", Nat); ("y", Nat)]))
+let t2 = Rec (0,(Rcd [("x", Top); ("y", Nat)]))
+let t3 = Rec (0,(Rcd [("x", Nat); ("y", Top)]))
+let t4 = Rec (0,(Rcd [("y", Top)]))
 
-let t5 = Rec (0,(Rcd (map_of_list [("x", Nat); ("y", Nat); ("z", Nat)])))
+let t5 = Rec (0,(Rcd [("x", Nat); ("y", Nat); ("z", Nat)]))
 
 
-let t6 = Rec (0,(Rcd (map_of_list [("x", Fun (Var 0, Nat)); ("y", Nat); ("z", Nat)])))
+let t6 = Rec (0,(Rcd [("x", Fun (Var 0, Nat)); ("y", Nat); ("z", Nat)]))
 
-let t7 = Rec (0,(Rcd (map_of_list [("x", Fun (Var 0, Nat)); ("z", Top); ("y", Nat)])))
+let t7 = Rec (0,(Rcd [("x", Fun (Var 0, Nat)); ("z", Top); ("y", Nat)]))
 
 

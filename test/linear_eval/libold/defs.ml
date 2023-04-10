@@ -8,25 +8,15 @@
 
 *)
 
-module TMap = Map.Make(String)
-
-
-let rec map_of_list l = 
-  match l with
-  | [] -> TMap.empty
-  | (k,v)::t -> TMap.add k v (map_of_list t)
-
-
 type typ = Nat | Real | Prod of typ * typ | Sum of typ * typ 
          | Fun of typ * typ | Rec of int * typ | Var of int
          | Top
-         | Rcd of typ TMap.t
+         | Rcd of (string * typ) list
 
 
 let rec numVars (t: typ) = match t with 
   | Prod (t1, t2) | Sum (t1, t2) | Fun (t1, t2) -> numVars t1 + numVars t2 
   | Rec (_, t) -> numVars t + 1
-  | Rcd fs -> TMap.fold (fun _ t acc -> acc + numVars t) fs 0
   | _ -> 0
 
 
@@ -60,10 +50,10 @@ let rec lev_typh (i: int) (env: (int * int) list) t : int * typ =
       let i', t' = lev_typh new_i ((j, i) :: env) t in
       i', Rec (i, t')
   | Rcd fs -> 
-      let i', fs' = TMap.fold (fun f t (i, fs) -> 
+      let i', fs' = List.fold_left (fun (i, fs) (f, t) -> 
         let i', t' = lev_typh i env t in
-        i', TMap.add f t' fs) fs (i, TMap.empty) in
-      i', Rcd fs'
+        i', (f, t') :: fs) (i, []) fs in
+      i', Rcd (List.rev fs')
 
 let lev_typ t = snd (lev_typh 0 [] t)
 
@@ -99,7 +89,7 @@ let rec string_of_typ t = match t with
   | Rec (i, t) -> "(μ " ^ ascii i ^ ". " ^ string_of_typ t ^ ")"
   | Var i -> ascii i
   | Top -> "T"
-  | Rcd fs -> "{" ^ String.concat "; " (List.map (fun (f, t) -> f ^ ": " ^ string_of_typ t)  (TMap.bindings fs)) ^ "}"
+  | Rcd fs -> "{" ^ String.concat ", " (List.map (fun (f, t) -> f ^ ": " ^ string_of_typ t) fs) ^ "}"
 
 let print_typ t = print_string (string_of_typ t)
 
@@ -165,32 +155,24 @@ let rec make_str_label (i: int) =
 
 
 let record_gen width b1_contra b1_conv b2_contra b2_conv = 
-  let rec helper (width: int) : (typ TMap.t * typ TMap.t) =
-    if width = 0 then TMap.empty, TMap.empty else
+  let rec helper (width: int) : ((string * typ) list * (string * typ) list) =
+    if width = 0 then [], [] else
       let f = make_str_label width in
       let fs1, fs2 = helper (width - 1) in
-      (( fs1 |> TMap.add f (Fun (b1_conv, Var 0))
-         |> TMap.add (f ^ "'") (Fun (Var 0, b1_contra))),
-        ( fs2 |> TMap.add f (Fun (b2_conv, Var 0))
-          |> TMap.add (f ^ "'") (Fun (Var 0, b2_contra)))) in
-           (* (f ^ "'", Fun (Var 0, b1_contra)) :: fs1, 
-        (f, Fun (b2_conv, Var 0)) ::  (f ^ "'", Fun (Var 0, b2_contra)) :: fs2) in *)
+      ((f, Fun (b1_conv, Var 0)) ::  (f ^ "'", Fun (Var 0, b1_contra)) :: fs1, 
+        (f, Fun (b2_conv, Var 0)) ::  (f ^ "'", Fun (Var 0, b2_contra)) :: fs2) in
   let fs1, fs2 = helper width in
   (Rec (0, Rcd fs1), Rec (0, Rcd fs2))
 
 
 
 let record_gen_pos width b1_conv b2_conv = 
-  let rec helper (width: int) : (typ TMap.t * typ TMap.t) =
-    if width = 0 then TMap.empty, TMap.empty else
+  let rec helper (width: int) : ((string * typ) list * (string * typ) list) =
+    if width = 0 then [], [] else
       let f = make_str_label width in
       let fs1, fs2 = helper (width - 1) in
-      ( 
-        (fs1 |> TMap.add (f ^ "'" ) (Fun (b1_conv, Var 0))),
-        (fs2 |> TMap.add (f ^ "'") (Fun (b2_conv, Var 0)))
-      ) in
-      (* ( (f ^ "'", Fun (b1_conv, Var 0)) :: fs1, 
-        (f ^ "'", Fun (b2_conv, Var 0)) :: fs2) in *)
+      ( (f ^ "'", Fun (b1_conv, Var 0)) :: fs1, 
+        (f ^ "'", Fun (b2_conv, Var 0)) :: fs2) in
   let fs1, fs2 = helper width in
   (Rec (0, Rcd fs1), Rec (0, Rcd fs2))
   
