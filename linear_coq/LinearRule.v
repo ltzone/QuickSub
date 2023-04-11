@@ -91,48 +91,6 @@ Qed.
 
 
 (* 
-Example test_Sub_1: forall evs, ~ Sub Pos Lt evs empty (typ_mu (typ_arrow typ_top (typ_mu (typ_arrow 0 1))))
-    (typ_mu (typ_arrow 0 (typ_mu (typ_arrow 0 1)))).
-Proof with auto.
-  intros evs Hsub.
-  inversion Hsub;subst...
-  pick_fresh X. specialize_x_and_L X L.
-  unfold open_tt in H4. simpl in H4. simpl_env in H4.
-  inversion H4;subst...
-  destruct cm1. 2:{ destruct cm2;try solve [inversion H10].
-    (* 2 is Lt *)
-    inversion H9;subst...
-    pick_fresh Y. specialize_x_and_L Y L0.
-    unfold open_tt in H5. simpl in H5. simpl_env in H5.
-    inversion H5;subst...
-    inversion H12;subst. { simpl in H7. admit. }
-    inversion H13;subst. 2:{ simpl in H15. admit. }
-    simpl in H14. inversion H14.
-  }
-  destruct cm2. 2:{ inversion H9;subst...
-    { (* rec_eq_notin *)
-      pick_fresh Y. specialize_x_and_L Y L0.
-      unfold open_tt in H5. simpl in H5. simpl_env in H5.
-      inversion H5;subst...
-      inversion H12;subst. { simpl in H7. admit. }
-      exfalso. apply Fr0... (* Y should not be in the set *)
-    }
-    { (* rec_eq_in *)
-      pick_fresh Y. specialize_x_and_L Y L0.
-      destruct H5 as [evs' [Hevs' H5]].
-      unfold open_tt in H5. simpl in H5. simpl_env in H5.
-      inversion H5;subst...
-      inversion H12;subst. { simpl in H7. admit. }
-      inversion H13;subst. 2:{ simpl in H15. admit. }
-      simpl in Hevs'.
-      simpl in H10. admit.
-    
-    }
-  }
-  admit.
-Admitted. *)
-
-(* 
 Ltac gather_atoms ::=
   let A := gather_atoms_with (fun x : atoms => x) in
   let B := gather_atoms_with (fun x : atom => singleton x) in
@@ -951,67 +909,6 @@ Proof with auto.
         apply pos_rec_t with (L:=L1)...
 Qed.        
 
-(* Lemma subst_lemma:
-  forall E A B C D X evs im im_x cm',
-    Sub im Lt evs E A B -> evs [=] emp ->
-    Sub im_x cm' emp E C D ->
-    binds X (bind_sub im_x) E ->
-    Sub im Lt emp E (subst_tt X (typ_mu (mode_choose im im_x C D)) A) (subst_tt X (typ_mu (mode_choose im im_x D C)) B).
-Proof with auto.
-  intros. dependent induction H.
-  - admit.
-
-  -
-    assert (He1: evs1 [=] emp) by fsetdec.
-    assert (He2: evs2 [=] emp) by fsetdec.
-    rewrite He1, He2 in *. clear He1 He2.
-    destruct cm1, cm2;simpl in H1...
-    +
-      simpl. rewrite <- H2. apply Sa_arrow with (cm1:=Lt) (cm2:=Lt)...
-      * rewrite mode_choose_switch with (C0:=C).
-        rewrite mode_choose_switch with (C0:=D).
-        apply IHSub1... reflexivity.
-      * apply IHSub2... reflexivity.
-    +
-      destruct (AtomSetImpl.is_empty evs2) eqn:Hempty;inversion H1. simpl.
-      rewrite <- H2. apply Sa_arrow with (cm1:=Lt) (cm2:=Lt)...
-       *)
-
-
-
-
-(* 
-  forall E1 E2 C D A B X im im_x evs cm,
-    wf_env (E1 ++ E2) -> X \notin fv_tt C \u fv_tt D \u dom (E1 ++ E2) ->
-    Sub im cm evs (E1 ++ X ~ bind_sub im_x ++ E2) A B ->
-    well_bind_env im (E1 ++ X ~ bind_sub im_x ++ E2) A B ->
-    forall cm',
-    Sub im_x cm' emp E2 (typ_mu (mode_choose im im_x C D)) (typ_mu (mode_choose im im_x D C)) ->
-    exists cm'' evs'', (Sub im cm'' evs'' (E1 ++ E2) (subst_tt X (typ_mu C) A) (subst_tt X (typ_mu D) B)). *)
-
-
-
-
-(* C and D must produce empty evs', otherwise fails *)
-
-
-(* Lemma in_env_case: forall E0 X im,
-X \in dom E0 ->
-(binds X (bind_sub im) E0 \/ binds X (bind_sub (flip_im im)) E0).
-Proof with auto.
-  intros.
-  induction E0...
-  - fsetdec.
-  - simpl in H. destruct a;simpl... apply add_iff in H. destruct H.
-    + subst. destruct b. destruct i
-  
-  apply  destruct H. analyze_binds H0.
-    + destruct im...
-    + destruct IHis_Menv...
-  - analyze_binds H0.
-    destruct IHis_Menv...
-Qed. *)
-
 
 Theorem soundness_posvar_simpl: forall E im im_x cm evs A B,
   Sub im cm evs E A B -> forall X, X `notin` evs -> 
@@ -1391,14 +1288,6 @@ Proof with auto.
         add_nil. apply WFS_weakening... destruct im,im_x...
       }
 
-      (* apply subst_reverse in IHSub1'...
-      2:{ admit. }
-      2:{ admit. }
-      2:{ admit. }
-      destruct_hypos.
-      subst...
-      apply Msub_lt_not_eq in H1...
-      exfalso... *)
     }
     { exists Lt, evs1'. apply Sa_rec_lt with (L:= L \u {{X}} \u {{X' }}\u dom (E1 ++ E2)).
       intros.  

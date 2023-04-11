@@ -23,91 +23,6 @@ Proof.
 Qed.
 
 
-Lemma trans_aux: forall B E,
-    type B -> forall im A C evs1 evs2 cm1 cm2,
-    Sub im cm1 evs1 E A B -> Sub im cm2 evs2 E B C -> 
-    evs1 [=] emp -> evs2 [=] emp ->
-    exists cm', Sub im cm' emp E A C.
-Proof with auto.
-  intros B E H. revert E.
-  dependent induction H;intros;try solve [solve_by_inv H0 H|solve_by_inv H H0|solve_by_inv H0 H2]...
-  - admit.
-  - admit.
-  - admit.
-  - admit.
-  -
-    dependent induction H1;subst...
-    +
-      dependent induction H3;subst...
-      *
-        admit.
-      *
-        clear H2 H4.
-        exists Lt.
-        apply Sa_rec_lt with (L:=L \u L0 \u L1)...
-        intros. specialize_x_and_L X L1.
-        specialize_x_and_L X L0.
-        specialize_x_and_L X L.
-        destruct H0 with (im:=im) (A:=open_tt A1 X) (C:=open_tt A2 X)
-        (evs1:=evs) (evs2:=evs0) (cm1:=Lt) (cm2:=Lt)
-        (E:= X ~ bind_sub im ++ E)... destruct x...
-        admit.
-      * clear H2 H4.
-Admitted.
-
-
-Lemma trans_aux': forall B E,
-    WFS E B -> forall im A C evs1 evs2,
-    Sub im Lt evs1 E A B -> Sub im Lt evs2 E B C -> 
-    evs1 [=] emp -> evs2 [=] emp ->
-    Sub im Lt emp E A C.
-Proof with auto.
-  intros B E H.
-  dependent induction H;intros;try solve [solve_by_inv H0 H|solve_by_inv H H0|solve_by_inv H0 H2]...
-  -
-    (* B = Top *)
-    dependent induction H0;subst...
-    { exfalso... }
-    { rewrite <- H1 in *... }
-  -
-    (* B = Nat *)
-    dependent induction H0;subst...
-    +
-      (* A <: nat <: Top *)
-      dependent induction H;subst...
-      { rewrite <- H0 in *... }
-    +
-      rewrite <- H1 in *...
-  -
-    (* B = X *)
-    dependent induction H1;subst...
-    +
-      (* A <:  X <: Top *)
-      dependent induction H0;subst...
-      { rewrite <- H4 in *... apply IHSub with (X0:=X)... }
-    +
-      rewrite <- H2 in *... apply IHSub with (X0:=X)...
-  -
-    (* B = A -> B *)
-    dependent induction H2;subst...
-    +
-      (* A0 < A -> B < Top *)
-      dependent induction H1;subst...
-      *
-        (* A1 -> A2 < A -> B < Top *)
-        apply Sa_top_lt...
-        { get_well_form... } { intros C. inversion C. }
-      *
-        rewrite <- H5 in *... apply IHSub with (B0:=B) (A0:=A)...
-    +
-      (* A0 < A -> B < B1 -> B2 *)
-      dependent induction H1;subst...
-      *
-        (* A1 -> A2 < A -> B < B1 -> B2 *)
-        clear IHSub1. clear IHSub2. clear IHSub3. clear IHSub0.
-        destruct cm0, cm3; try solve [inversion H1].
-Admitted.
-
 Lemma sub_eq_evs: forall im cm1 cm2 evs1 evs2 E A B,
     (* typePairR A B -> *)
     Sub im cm1 evs1 E A B -> 
@@ -350,12 +265,38 @@ Proof with auto.
           contradiction
           
           *)
-          + admit.
-          + admit.
           + 
-          (* require syntactic *) admit.
+            destruct (AtomSetImpl.is_empty evs2) eqn:Eevs2; try solve [inversion H2].
+            apply is_empty_iff in Eevs2. destruct (AtomSetImpl.is_empty evs1') eqn:Eevs1'...
+            apply Msub_eq_sem in H1_. rewrite H1_ in *. (*  require syntactic equal *)
+            pose proof sub_eq_evs _ _ _ _ _ _ _ _ H2_ Es1b.
+            destruct_hypos.  
+            apply is_not_empty_iff in Eevs1'. exfalso.
+            rewrite H3 in *. congruence.
           +
-          (* require syntactic *) admit.
+            destruct (AtomSetImpl.is_empty evs2) eqn:Eevs2; try solve [inversion H2].
+            apply is_empty_iff in Eevs2. destruct (AtomSetImpl.is_empty evs1') eqn:Eevs1'...
+            apply Msub_eq_sem in H1_. rewrite H1_ in *. (*  require syntactic equal *)
+            pose proof sub_eq_evs _ _ _ _ _ _ _ _ H2_ Es1b.
+            destruct_hypos.  
+            apply is_not_empty_iff in Eevs1'. exfalso.
+            rewrite H3 in *. congruence.
+          + 
+            destruct (AtomSetImpl.is_empty evs0) eqn:Eevs0; try solve [inversion H1].
+            apply is_empty_iff in Eevs0. destruct (AtomSetImpl.is_empty evs2') eqn:Eevs2'...
+            apply Msub_eq_sem in H2_0. rewrite H2_0 in *. (*  require syntactic equal *)
+            pose proof sub_eq_evs _ _ _ _ _ _ _ _ H1_0 Es2b.
+            destruct_hypos.  
+            apply is_not_empty_iff in Eevs2'. exfalso.
+            rewrite H3 in *. congruence.
+          +
+            destruct (AtomSetImpl.is_empty evs1) eqn:Eevs1; try solve [inversion H1].
+            apply is_empty_iff in Eevs1. destruct (AtomSetImpl.is_empty evs1') eqn:Eevs1'...
+            apply Msub_eq_sem in H2_. rewrite H2_ in *. (*  require syntactic equal *)
+            pose proof sub_eq_evs _ _ _ _ _ _ _ _ H1_ Es1b.
+            destruct_hypos.  
+            apply is_not_empty_iff in Eevs1'. exfalso.
+            rewrite H3 in *. congruence.
           
         }
       *
@@ -374,7 +315,10 @@ Proof with auto.
         (* Rec Lt + Top *)
         exists emp. split.
         { fsetdec. }
-        { apply Sa_top_lt... admit. intros C. inversion C. }
+        { apply Sa_top_lt... 
+          { assert (Sub im Lt evs E (typ_mu A1) (typ_mu T)). { apply Sa_rec_lt with (L:=L0)... }
+            apply sub_regular in H5. destruct_hypos... }
+          intros C. inversion C. }
       *
         (* Rec Lt + Lt *)
         clear H3.
@@ -449,20 +393,89 @@ Solved by lt => emp
       destruct IHSub with (T0:=T) as [evs1 [? ?]]...
       exists evs1;split... fsetdec.
   +
-    (* Eq in *)
-    (* dependent induction H3;subst... *)
-    admit.
+    clear H2.
+    (* assert ((Sub im Eq evs E (typ_mu A1) (typ_mu T))). { apply Sa_rec_eq_notin with (L:=L0)... } *)
+    dependent induction H3;subst...
+    *
+      (* Rec Eq + Top *)
+      exists emp. split.
+      { fsetdec. }
+      { apply Sa_top_lt...
+        assert ((Sub im Eq evs E (typ_mu A1) (typ_mu T))). { apply Sa_rec_eq_notin with (L:=L0)... } 
+        apply sub_regular in H5. destruct_hypos...
+        intros C. inversion C. }
+    *
+      (* Rec Eq not in + Lt *)
+      exists emp.
+      split.
+      { fsetdec. }
+      pick_fresh X. specialize_x_and_L X L.
+      specialize_x_and_L X L0.
+      specialize_x_and_L X L1.
+      pose proof H0 _ _ _ _ _ _ _ _ H1 H2.
+      destruct H4 as [evs1 [? ?]].
+      pose proof H5 as H6.
+      apply sub_lt_then_emp in H6... rewrite H6 in H5.
+      apply Sa_rec_lt with (L:=L \u fv_tt A1 \u fv_tt A2 \u {{ X }} \u dom E)... intros.
+      apply Sa_evs_proper with (evs:=
+          if AtomSetImpl.mem X emp then add X0 (remove X emp) else emp)...
+      2:{ destruct (AtomSetImpl.mem X emp) eqn:Evs2;try reflexivity.
+          apply mem_iff in Evs2. exfalso. clear - Evs2. fsetdec. }
+      add_nil. apply sub_replacing_var...
+      get_well_form... inversion H5;subst. constructor...
+    *
+      (* Rec Eq not in + Rec Eq notin *)
+      pick_fresh X. specialize_x_and_L X L.
+      specialize_x_and_L X L0.
+      specialize_x_and_L X L1.
+      pose proof H0 _ _ _ _ _ _ _ _ H1 H2.
+      destruct H4 as [evs1 [? ?]].
+      exists evs1. split...
+      apply Sa_rec_eq_notin with (L:=L \u fv_tt A1 \u fv_tt A2 \u {{ X }} \u dom E)... intros.
+      apply Sa_evs_proper with (evs:=
+          if AtomSetImpl.mem X evs1 then add X0 (remove X evs1) else evs1)...
+      2:{ destruct (AtomSetImpl.mem X evs1) eqn:Evs2;try reflexivity.
+          apply mem_iff in Evs2. exfalso. clear - Evs2 Fr H4. rewrite H4 in Evs2.
+          apply Fr. clear - Evs2. fsetdec. }
+      add_nil. apply sub_replacing_var...
+      get_well_form... inversion H5;subst. constructor...
+    *
+      (* Rec Eq not in + Rec Eq in *)
+      assert ((Sub im Eq evs E (typ_mu A1) (typ_mu T))). { apply Sa_rec_eq_notin with (L:=L0)... } 
+      pick_fresh X. specialize_x_and_L X L.
+      specialize_x_and_L X L0.
+      specialize_x_and_L X L1.
+      pose proof H2. pose proof H1.
+      apply Msub_eq_sem in H2.
+      apply Msub_eq_sem in H1.
+      apply open_tt_fresh_eq_inv in H2...
+      apply open_tt_fresh_eq_inv in H1...
+      subst.
+
+       (* get_well_form. inversion H6;subst. *)
+      destruct (Msub_refl E im (typ_mu A2)) as [evs1 ?];try solve [get_well_form;auto;get_type;auto].
+      exists evs1. split...
+      apply sub_evs_fv in H1. destruct_hypos. fsetdec.
+    *
+      destruct IHSub with (T0:=T) as [evs1 [? ?]]...
+      { exists evs1;split... fsetdec. }
+
+
+
   +
-    (* Eq not in *)
+    (* Eq in *)
     clear H2.
     dependent induction H3;subst...
     *
-      (* Rec Eq not in + Top *)
+      (* Rec Eq in + Top *)
       exists emp. split.
       { fsetdec. }
-      { apply Sa_top_lt... admit. intros C. inversion C. }
+      { apply Sa_top_lt...
+        assert ((Sub im Eq (evs \u fv_tt A1) E (typ_mu A1) (typ_mu T))). { apply Sa_rec_eq_in with (L:=L0)... }
+        get_well_form...
+        intros C. inversion C. }
     *
-      (* Rec Eq not in + Lt *)
+      (* Rec Eq in + Lt *)
       exists emp.
       split.
       { fsetdec. }
@@ -482,6 +495,7 @@ Solved by lt => emp
       get_well_form... inversion H7;subst. constructor...
     *
       (* Rec Eq not in + Eq *)
+      assert (Esub: (Sub im Eq (evs \u fv_tt A1) E (typ_mu A1) (typ_mu T))). { apply Sa_rec_eq_in with (L:=L0)... }
       pick_fresh X. specialize_x_and_L X L.
       specialize_x_and_L X L0.
       specialize_x_and_L X L1.
@@ -504,11 +518,12 @@ Solved by lt => emp
       apply open_tt_fresh_eq_inv in H1...
       subst.
        (* get_well_form. inversion H6;subst. *)
-      destruct (Msub_refl E im (typ_mu A2)) as [evs1 ?]... { admit. } { admit. } { admit. }
+      destruct (Msub_refl E im (typ_mu A2)) as [evs1 ?];try solve [get_well_form;auto;get_type;auto].
       exists evs1. split...
       apply sub_evs_fv in H1. destruct_hypos. fsetdec.
 
     *
+      assert (Esub: (Sub im Eq (evs \u fv_tt A1) E (typ_mu A1) (typ_mu T))). { apply Sa_rec_eq_in with (L:=L0)... }
       (* Rec Eq not in + Rec Eq not in *)
       pick_fresh X. specialize_x_and_L X L.
       specialize_x_and_L X L0.
@@ -521,7 +536,7 @@ Solved by lt => emp
       apply open_tt_fresh_eq_inv in H1...
       subst.
        (* get_well_form. inversion H6;subst. *)
-      destruct (Msub_refl E im (typ_mu A2)) as [evs1 ?]... { admit. } { admit. } { admit. }
+      destruct (Msub_refl E im (typ_mu A2)) as [evs1 ?];try solve [get_well_form;auto;get_type;auto].
       exists evs1. split...
       apply sub_evs_fv in H1. destruct_hypos. fsetdec.
     *
@@ -530,7 +545,7 @@ Solved by lt => emp
   +
     destruct IHSub with (T0:=T) as [evs1 [? ?]]...
     { exists evs1;split... fsetdec. }
-Admitted.
+Qed.
 
 
 
