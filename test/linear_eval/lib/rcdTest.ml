@@ -87,12 +87,12 @@ let test_wrapper ?(print=false) n t1 t2  =
   Printf.printf "%s\t%B\t%f\t%B\t%f\t%B\t%f\n" n linear_res (linear_end -. linear_start) complete_res (complete_end -. complete_start) amber_res (amber_end -. amber_start)
 
 let test1 =
-  let depth = [1; 2; 3; 4; 5; 6; 7; 8; 9; 10; 20] in
-  let width = [1; 10; 50; 100; 200; 500; 1000] in
+  let depth = [1; 2; 4; 6; 8; 10; 20; 30] in
+  let width = [100; 200; 500; 1000; 2000; 3000; 4000] in
   List.iter (fun d ->
     List.iter (fun w ->
     let t1 = rcd_typ_gen2 d w Real Nat in
     let t2 = rcd_typ_gen2 d w Nat Real in
-    test_wrapper (Printf.sprintf "rcd_typ_gen2 %d * %d" d w) t1 t2
+    test_wrapper (Printf.sprintf "rcd_typ_gen2 %d\t%d" d w) t1 t2
   ) width) depth
 
