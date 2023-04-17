@@ -71,6 +71,9 @@ let test_wrapper ?(print=false) n t1 t2  =
   let linear_start = Unix.gettimeofday () in
   let linear_res = LinearSubExt.sub t1 t2 in
   let linear_end = Unix.gettimeofday () in
+  let linear_opt_start = Unix.gettimeofday () in
+  let linear_opt_res = LinearSubOpt.sub t1 t2 in
+  let linear_opt_end = Unix.gettimeofday () in
   let amber_start = Unix.gettimeofday () in
   let amber_res = AmberSub.sub t1 t2 in
   let amber_end = Unix.gettimeofday () in
@@ -84,15 +87,32 @@ let test_wrapper ?(print=false) n t1 t2  =
       print_string "t2 := ";
       print_typ t2;
       print_endline "") else ());
-  Printf.printf "%s\t%B\t%f\t%B\t%f\t%B\t%f\n" n linear_res (linear_end -. linear_start) complete_res (complete_end -. complete_start) amber_res (amber_end -. amber_start)
+  Printf.printf "%s\t%B\t%f\t%B\t%f\t%B\t%f\t%B\t%f\n" n 
+    linear_res (linear_end -. linear_start) 
+    linear_opt_res (linear_opt_end -. linear_opt_start)
+    complete_res (complete_end -. complete_start)
+    amber_res (amber_end -. amber_start)
 
-let test1 =
+(* successful config *)
+let test1 () =
   let depth = [1; 2; 4; 6; 8; 10; 20; 30] in
   let width = [100; 200; 500; 1000; 2000; 3000; 4000] in
   List.iter (fun d ->
     List.iter (fun w ->
     let t1 = rcd_typ_gen2 d w Real Nat in
     let t2 = rcd_typ_gen2 d w Nat Real in
+    test_wrapper (Printf.sprintf "rcd_typ_gen2 %d\t%d" d w) t1 t2
+  ) width) depth
+
+
+(* failed config *)
+let test2 () =
+  let depth = [1; 2; 4; 6; 8; 10; 20; 30] in
+  let width = [100; 200; 500; 1000; 2000; 3000; 4000] in
+  List.iter (fun d ->
+    List.iter (fun w ->
+    let t1 = rcd_typ_gen2 d w Nat Nat in
+    let t2 = rcd_typ_gen2 d w Real Real in
     test_wrapper (Printf.sprintf "rcd_typ_gen2 %d\t%d" d w) t1 t2
   ) width) depth
 

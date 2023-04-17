@@ -82,6 +82,24 @@ let rec subh (evs: bool Array.t) (fvt: bool Array.t) (e:env) (m:mode) (x:typ) (y
       in
         fvt.(i) <- false;
         res
+  | (Rcd fs, Rcd gs) ->
+      if TMap.exists (fun g _ -> not (TMap.mem g fs)) gs then None
+      else
+        (* iterate on elements of fs *)
+      TMap.fold (fun f t1 prev_res ->
+        Option.bind prev_res @@
+        fun (c_prev, is_empty_prev) ->
+          match TMap.find_opt f gs with
+          | None -> 
+            (* if there are some missing fields in gs, then the result should be at least Lt (or None) *)
+              if is_empty_prev then Some (Lt, true) else None
+          | Some t2 ->
+            Option.bind (subh evs fvt e m t1 t2) @@
+            fun (c_cur, is_empty_cur) ->
+                match compose_cmp (c_prev, is_empty_prev) (c_cur, is_empty_cur) with
+                | Some c -> Some (c, is_empty_prev && is_empty_cur)
+                | None -> None)
+           fs (Some (Eq, true))
   | _, _ -> None
 
 

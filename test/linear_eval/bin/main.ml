@@ -5,7 +5,7 @@
 LinearSubOpt.sub t1 t2 *)
 
 
-let main = RcdTest.test1
+let main = RcdTest.test2 (); RcdTest.test1 ()
 
 (* Test random *)
 (* 

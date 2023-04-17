@@ -105,5 +105,5 @@ let t6 = Rec (0,(Rcd (map_of_list [("x", Fun (Var 0, Nat)); ("y", Nat); ("z", Na
 
 let t7 = Rec (0,(Rcd (map_of_list [("x", Fun (Var 0, Nat)); ("z", Top); ("y", Nat)])))
 
-let t8 = Rec (0, (Rcd (map_of_list [("x", Top); ("y", Nat)])))
+let t8 = Rec (0, (Rcd (map_of_list [("x", Fun (Var 0, Nat)); ("y", Nat)])))
 

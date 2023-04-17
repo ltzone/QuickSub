@@ -94,7 +94,8 @@ let rec subh (e:env) (m:mode) (x:typ) (y:typ) : (cmp * VSet.t) option =
           match TMap.find_opt f gs with
           | None -> 
             (* if there are some missing fields in gs, then the result should be at least Lt (or None) *)
-              Some (Lt, VSet.empty)
+              if is_empty evs_prev then Some (Lt,  VSet.empty) else None
+            (* Some (Lt, VSet.empty) *)
           | Some t2 ->
             Option.bind (subh e m t1 t2) @@
             fun (c_cur, evs_cur) ->
