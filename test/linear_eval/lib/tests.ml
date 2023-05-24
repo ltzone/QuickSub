@@ -7,6 +7,12 @@ let test_wrapper ?(print=false) n t1 t2  =
   (* let linear2_start = Unix.gettimeofday () in
   let linear2_res = LinearSubOpt.sub t1 t2 in
   let linear2_end = Unix.gettimeofday () in *)
+
+  let nominal_start = Unix.gettimeofday () in
+  let nominal_res = NominalSub.sub t1 t2 in
+  let nominal_end = Unix.gettimeofday () in
+
+
   let amber_start = Unix.gettimeofday () in
   let amber_res = AmberSub.sub t1 t2 in
   let amber_end = Unix.gettimeofday () in
@@ -25,7 +31,14 @@ let test_wrapper ?(print=false) n t1 t2  =
   print_endline ("Complete: " ^ (string_of_bool complete_res));
   Printf.printf "Complete time: %fs\n" (complete_end -. complete_start) *)
   (* Printf.printf "%u\t%B\t%f\t%B\t%f\t%B\t%f\t%B\t%f\n" n linear_res (linear_end -. linear_start) linear2_res (linear2_end -. linear2_start) complete_res (complete_end -. complete_start) amber_res (amber_end -. amber_start) *)
-  Printf.printf "%u\t%B\t%f\t%B\t%f\t%B\t%f\n" n linear_res (linear_end -. linear_start) complete_res (complete_end -. complete_start) amber_res (amber_end -. amber_start)
+  Printf.printf "%u\t" n;
+  Printf.printf "%B\t%f\t" linear_res (linear_end -. linear_start);
+  (* Printf.printf "%B\t%f\t" linear2_res (linear2_end -. linear2_start); *)
+  Printf.printf "%B\t%f\t" nominal_res (nominal_end -. nominal_start);
+  Printf.printf "%B\t%f\t" complete_res (complete_end -. complete_start);
+  Printf.printf "%B\t%f\n" amber_res (amber_end -. amber_start)
+  
+  (* Printf.printf "%u\t%B\t%f\t%B\t%f\t%B\t%f\n" n linear_res (linear_end -. linear_start) complete_res (complete_end -. complete_start) amber_res (amber_end -. amber_start) *)
 
 
 
