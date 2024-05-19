@@ -47,6 +47,10 @@ let rec subh (dir: bool) (te1 : tenv) (te2 : tenv) (ae : aenv) (t1 : typ) (t2 : 
       subh dir ((i, t1)::te1) te2 ae a t2
   | (_, Rec (i, a)) ->
       subh dir te1 ((i, t2)::te2) ae t1 a
+  | Rcd fs, Rcd gs ->
+      TMap.fold (fun l g prev -> 
+        match prev with None -> None | Some prev ->
+        if TMap.mem l fs then (subh dir te1 te2 prev (TMap.find l fs) g) else None) gs (Some ae)
   | _ -> None
 
     

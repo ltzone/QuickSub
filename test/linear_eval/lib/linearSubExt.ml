@@ -83,7 +83,11 @@ let rec subh (e:env) (m:mode) (x:typ) (y:typ) : (cmp * VSet.t) option =
               | Some c -> Some (c, VSet.union l l')
               | None -> None))
         )) gs (Some (Eq, VSet.empty)) *)  (*  fold on RHS, not correct *)
-  | (Rcd fs, Rcd gs) ->
+
+
+
+
+  (* | (Rcd fs, Rcd gs) ->
     (* check if the keys in fs are are strict subset of gs, if so the subtyping fails *)
       if TMap.exists (fun g _ -> not (TMap.mem g fs)) gs then None
       else
@@ -102,7 +106,58 @@ let rec subh (e:env) (m:mode) (x:typ) (y:typ) : (cmp * VSet.t) option =
               match compose_cmp (c_cur, evs_cur) (c_prev, evs_prev) with
               | Some c -> Some (c, VSet.union evs_cur evs_prev)
               | None -> None
-      ) fs (Some (Eq, VSet.empty))
+      ) fs (Some (Eq, VSet.empty)) *)
+
+
+    (* an attempt to improve *)
+    | (Rcd fs, Rcd gs) ->
+      (* check if the keys in fs are are strict subset of gs, if so the subtyping fails *)
+      if TMap.exists (fun g _ -> not (TMap.mem g fs)) gs then None
+      else
+        (* iterate on elements of fs *)
+        let cm_res =
+          TMap.mapi (fun l t1  -> if TMap.mem l gs then 
+              subh e m t1 (TMap.find l gs)
+            else Some (Lt, VSet.empty)
+            ) fs in 
+        TMap.fold (fun _ cur_res prev_res ->
+          match cur_res with
+          | None -> None
+          | Some (c_cur, es_cur) ->
+          match prev_res with
+          | None -> None
+          | Some (c_prev, es_prev) ->
+            match c_prev with
+            | Lt -> Some (Lt, VSet.empty)
+            | Eq -> 
+                match compose_cmp (c_cur, es_cur) (c_prev, es_prev) with
+                | Some c -> Some (c, VSet.union es_cur es_prev)
+                | None -> None
+        ) cm_res (Some (Eq, VSet.empty))
+
+
+        (* if TMap.exists (fun g _ -> not (TMap.mem g fs)) gs then None
+        else
+          (* iterate on elements of fs *)
+        TMap.fold (fun f t1 prev_res ->
+          Option.bind prev_res @@
+          fun (c_prev, evs_prev) ->
+            match TMap.find_opt f gs with
+            | None -> 
+              (* if there are some missing fields in gs, then the result should be at least Lt (or None) *)
+                if is_empty evs_prev then Some (Lt,  VSet.empty) else None
+              (* Some (Lt, VSet.empty) *)
+            | Some t2 ->
+              Option.bind (subh e m t1 t2) @@
+              fun (c_cur, evs_cur) ->
+                match compose_cmp (c_cur, evs_cur) (c_prev, evs_prev) with
+                | Some c -> Some (c, VSet.union evs_cur evs_prev)
+                | None -> None
+        ) fs (Some (Eq, VSet.empty)) *)
+
+
+
+
   | _, _ -> None
     
 let sub (x:typ) (y:typ) : bool =

@@ -98,6 +98,9 @@ let rec subh (i: int) (e:env) (x:typ) (y:typ) : bool * int =
       let a_subst = subst_label k a (Prod (Var fresh_i', a_lift)) in
       let b_subst = subst_label j b (Prod (Var fresh_i', b_lift)) in
       subh fresh_i e a_subst b_subst
+  | Rcd fs, Rcd gs ->
+      TMap.for_all (fun l g -> TMap.mem l fs && fst (subh i e (TMap.find l fs) g)) gs, i
+       (* TOFIX: the i should be accummulated  *)
   | _, _ -> false, i
     
 

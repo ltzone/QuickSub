@@ -1,7 +1,5 @@
 open Defs;;
 
-
-
 exception Timeout
 
 let max_time = 2.
@@ -129,11 +127,18 @@ let test7 fs (n:int) =
   let t1, t2 = composite_gen 10 (n / 10) Real Nat in
   test_wrap fs n t1 t2
 
+
+
 let test_rcd fs (n:int) = 
-  (* Real ->a , a -> Nat <:  Real -> a, a -> Real *)
-  let t1, t2 = record_gen n Real Real Real Real  in
+  (* Real ->a , a -> Real <:  Real -> a, a -> Real *)
+  let t1, t2 = record_gen n Nat Real Real Real  in
   test_wrap fs n t1 t2
 
+
+let test_rcd_top fs (n:int) = 
+  (* Real ->a , Top -> Real <:  Real -> a, a -> Real *)
+  let t1, t2 = record_gen n Real Real Real Real  in
+  test_wrap fs n t1 t2
 
 let test_rcd_pos fs (n:int) = 
   (* Real ->a  <:  Real -> a *)
