@@ -138,6 +138,20 @@ Proof with auto.
     apply H7 with (i:=i)...
     apply Tlookup_sem in H0...
   -
+    repeat split...
+    + constructor. intros.
+      pose proof binds_In _ _ _ _ H5.
+      rewrite H2 in H6.
+      apply binds_In_inv in H6.
+      destruct H6 as [Ti ?].
+      apply H4 with (ei:=x) in H6... destruct_hypos...
+    + constructor...
+      intros. 
+      pose proof binds_In _ _ _ _ H5.
+      rewrite <- H2 in H6.
+      apply binds_In_inv in H6.
+      destruct H6 as [ei ?].
+      apply H4 with (Ti:=T') in H6... destruct_hypos...
     
   -
     destruct IHtyping.
@@ -199,6 +213,10 @@ Proof with auto.
     intros.
     rewrite_alist (([(X0, bind_sub im)] ++ E1) ++ E2).
     apply H0 with (X1:=X) (S0:=S)...
+  -
+    constructor...
+    intros.
+    apply H1 with (i:=i) (X0:=X) (S0:=S)...
 Qed.    
 
 Lemma strengthening_sub_typ: forall im cm evs E1 E2 A B X T,

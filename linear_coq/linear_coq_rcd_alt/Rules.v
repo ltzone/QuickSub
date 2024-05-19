@@ -627,9 +627,10 @@ Inductive typing : env -> exp -> typ -> Prop :=
      Tlookup i T = Some Ti ->
      typing G (exp_rcd_proj e i) Ti
  | typing_rcd_cons: forall G es tys,
-     wf_env G ->
-     (forall i T ei, binds i T  tys -> tlookup i es = Some ei ->
-         typing G  ei T) ->
+     wf_env G -> uniq es -> uniq tys ->
+     (* (forall i ei, binds i ei es -> exists Ti, binds i Ti tys) -> *)
+     dom es [=] dom tys ->
+     (forall i ei Ti, binds i Ti tys -> binds i ei es -> typing G ei Ti) ->
      typing G (exp_rcd es) (typ_rcd tys)
  | typing_sub: forall G T e S evs cm,
      typing G e S ->
