@@ -1,16 +1,29 @@
 (* let main = 
-  List.iter Tests.test1 [10;100] *)
+  List.iter Tests.test3
+  (* [10;100] *)
   (* [10;50;100;200;500;1000;2000;3000;4000;5000;6000;7000;8000;9000;10000] *)
   (* [10;100;1000] *)
+  [10;100;1000;2000;5000] *)
 
-(* let t1, t2 = Defs.deep_subtyp_gen 2 Nat Real in
-LinearSubOpt.sub t1 t2 *)
+let main =
+  List.iter (fun (fname, testfun) ->
+    print_string "-------------------------- ";
+    print_string fname;
+    print_endline " ------------------------";
+    print_endline "Depth\tLinear\tLinear time\tNominal\tNominal time\tEqui\tEqui time\tAmber\tAmber time\tL17\tComplete time";
+    List.iter (testfun [LinearSubExt.sub; NominalSub.sub; EquiSub.sub; AmberSub.sub; CompleteSub.sub]) [10;100;1000;2000;5000])
+    [
+      ("disprove: mu a. a -> mu b. b -> .... Nat <: mu a. a -> mu b. b -> .... Real", Tests.test1);
+      ("prove: mu a. a -> mu b. b -> .... Nat <: mu a. a -> mu b. b -> .... Nat", Tests.test2);
+      ("prove: Real -> mu a. Real -> ... mu z. Real -> z <:  Nat -> mu a. Nat -> ... mu z. Nat -> z", Tests.test3);
+      ("disprove mu a. Nat -> (mu b. Nat -> ... -> a ,, b) <: mu a. Real -> (mu b. Real -> ... -> a ,, b ,, ... ,, z)", Tests.test4);
+      ("prove mu a. Real -> (mu b. Real -> ... -> a ,, b) <: mu a. Nat -> (mu b. Nat -> ... -> a ,, b ,, ... ,, z)", Tests.test5);
+      ("prove mu a. Nat -> (mu b. Nat -> ... -> a ,, b) <: mu a. Nat -> (mu b. Nat -> ... -> a ,, b ,, ... ,, z) ", Tests.test6);
+      ("a mixed test", Tests.test7);
+      ("rcd with negative variables", Tests.test_rcd);
+      ("rcd with positive variables", Tests.test_rcd_pos)
+    ]
 
-
-(* let main = RcdTest.test2 (); RcdTest.test1 () *)
-
-(* test linear, nominal, complteness, and amber *)
-(* let main = List.iter Tests.test1 [10;50;100;200;500;1000;2000;3000] *)
 
 
 
