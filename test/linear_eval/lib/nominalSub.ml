@@ -103,8 +103,8 @@ let rec subh (i: int) (e:env) (x:typ) (y:typ) : bool * int =
 
 
 let sub (x:typ) (y:typ) : bool = 
-  let x = lev_typ x in
-  let y = lev_typ y in
+  (* let x = lev_typ x in
+  let y = lev_typ y in *)
 
   fst  (subh (max (numVars x) (numVars y)) [] x y)
 

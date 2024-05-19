@@ -1,5 +1,7 @@
 (* let main = 
-  List.iter Tests.test_rcd_pos [10;50;100;200;500;1000;2000;3000;4000;5000;6000;7000;8000;9000;10000] *)
+  List.iter Tests.test1 [10;100] *)
+  (* [10;50;100;200;500;1000;2000;3000;4000;5000;6000;7000;8000;9000;10000] *)
+  (* [10;100;1000] *)
 
 (* let t1, t2 = Defs.deep_subtyp_gen 2 Nat Real in
 LinearSubOpt.sub t1 t2 *)
@@ -13,9 +15,9 @@ LinearSubOpt.sub t1 t2 *)
 
 
 
-(* Test random *)
+(* Test nominal correctness *)
 
-let main = 
+(* let main = 
   let tys = Defs.typ_pair_gen 2 in
   (* print_endline (string_of_int (List.length tys)); *)
   List.iteri (
@@ -39,4 +41,35 @@ let main =
         (* print_endline (Defs.string_of_typ ((AmberSub.lift_vars (Defs.numVars t1) t2))); *)
         Printf.printf "Error: %s <: %s, \t Amber:%s \t Linear:%s\n" (Defs.string_of_typ t1) (Defs.string_of_typ t2) (string_of_bool res1) (string_of_bool res2))
   ) tys
+ *)
+
+
+
+(* Test equi correctness *)
+
+(* let main = 
+  let tys = Defs.typ_pair_gen 2 in
+  (* print_endline (string_of_int (List.length tys)); *)
+  List.iteri (
+    fun _ (t1, t2) -> 
+      (* (if i mod 100000 = 0 then 
+        (* print_endline (string_of_int i); *)
+        (* (print_string (Defs.string_of_typ t1);
+        print_string " <: ";
+        print_endline (Defs.string_of_typ t2)) *) ()
+      else ()); *)
+      let res1 = LinearSub.sub t1 t2 in
+      let res2 = try EquiSub.sub t1 t2  with
+      | Failure e -> print_string (Defs.string_of_typ t1);
+        print_string " <: ";
+        print_endline (Defs.string_of_typ t2);
+        raise (Failure e  )
+      in
+      if res1 == true && res2 == false then
+        (* if res1 <> res2 then *)
+        (
+        (* print_endline (string_of_int (Defs.numVars t1)); print_endline (string_of_bool (AmberSub.eq_type_lift true (Defs.numVars t1) t1 (AmberSub.lift_vars (Defs.numVars t1) t2))); *)
+        (* print_endline (Defs.string_of_typ ((AmberSub.lift_vars (Defs.numVars t1) t2))); *)
+        Printf.printf "Error: %s <: %s, \t Amber:%s \t Equi:%s\n" (Defs.string_of_typ t1) (Defs.string_of_typ t2) (string_of_bool res1) (string_of_bool res2))
+  ) tys *)
 
