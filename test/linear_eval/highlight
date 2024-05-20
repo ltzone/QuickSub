@@ -1,0 +1,29 @@
+highlight_min_time() {
+    local line min_time highlighted_line
+    while IFS= read -r line; do
+        if [[ "$line" =~ ^\( ]]; then
+            # Extract times from the line using awk
+            times=($(echo $line | awk '{for (i=3; i<=NF; i+=2) if ($i ~ /^[0-9]/) print $i}'))
+
+            # Find the minimum time
+            min_time=$(printf "%s\n" "${times[@]}" | sort -n | head -n 1)
+
+            # Highlight the minimum time in the line
+            highlighted_line=$line
+            for time in "${times[@]}"; do
+                if [[ $time == $min_time ]]; then
+                    highlighted_line=${highlighted_line//$time/$'\033[1;31m'$time$'\033[0m'}
+                fi
+            done
+
+            # Output the line with the highlighted minimum time
+            echo "$highlighted_line"
+        else
+            # Print the header line as it is
+            echo "$line"
+        fi
+    done
+}
+
+
+dune exec linear_eval | highlight_min_time

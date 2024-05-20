@@ -5,17 +5,26 @@
   (* [10;100;1000] *)
   [10;100;1000;2000;5000] *)
 
-let main =
+let test_group fnames (fs:(Defs.typ -> Defs.typ -> bool) list) n =
   List.iter (fun (fname, testfun) ->
     print_string "-------------------------- ";
     print_string fname;
     print_endline " ------------------------";
-    print_endline "Depth\tLinear\tLinear time\tLinOpt\tLinOpt time\tNominal\tNominal time\tEqui\tEqui time\tAmber\tAmber time\tL17\tComplete time";
-    List.iter (testfun [LinearSubExt.sub; LinearSubOpt.sub; NominalSub.sub; EquiSub.sub; AmberSub.sub; CompleteSub.sub]) 
-      (* [10;100;1000;2000;5000] *)
-      [10;100;1000;2000;3000;4000;5000]
-      (* ;6000;7000;8000;9000;10000] *)
-    )
+    print_endline fnames;
+    List.iter (testfun fs) n
+  )
+
+let main =
+  (* Test normal *)
+  (* let fnames = "Configurations\tLinear\tLinear time\tLinOpt\tLinOpt time\tNominal\tNominal time\tEqui\tEqui time\tAmber\tAmber time\tL17\tComplete time" in *)
+  let fnames = "Configurations\tLinear\tLinear time\tLinOpt\tLinOpt time\tEqui\tEqui time\tAmber\tAmber time\tL17\tComplete time" in
+  let fs = [LinearSubExt.sub; LinearSubOpt.sub; (* NominalSub.sub; *) EquiSub.sub; AmberSub.sub; CompleteSub.sub] in
+  let depths = 
+    (* [10;100;1000;2000;5000] *)
+    [10;100;1000;2000;3000;4000;5000]
+    (* ;6000;7000;8000;9000;10000] *)
+  in
+  test_group fnames fs depths
     [
       (* ("disprove: mu a. a -> mu b. b -> .... Nat <: mu a. a -> mu b. b -> .... Real", Tests.test1);
       ("prove: mu a. a -> mu b. b -> .... Nat <: mu a. a -> mu b. b -> .... Nat", Tests.test2);
@@ -23,11 +32,37 @@ let main =
       ("disprove mu a. Nat -> (mu b. Nat -> ... -> a ,, b) <: mu a. Real -> (mu b. Real -> ... -> a ,, b ,, ... ,, z)", Tests.test4);
       ("prove mu a. Real -> (mu b. Real -> ... -> a ,, b) <: mu a. Nat -> (mu b. Nat -> ... -> a ,, b ,, ... ,, z)", Tests.test5);
       ("prove mu a. Nat -> (mu b. Nat -> ... -> a ,, b) <: mu a. Nat -> (mu b. Nat -> ... -> a ,, b ,, ... ,, z) ", Tests.test6);
-      ("a mixed test", Tests.test7); *)
-      ("rcd with negative variables", Tests.test_rcd);
+      ("a mixed test", Tests.test7)  *)
+      (* ("rcd with negative variables", Tests.test_rcd);
       ("rcd with top + negative variables", Tests.test_rcd_top);
-      ("rcd with positive variables", Tests.test_rcd_pos)
-    ]
+      ("rcd with positive variables", Tests.test_rcd_pos) *)
+    ];
+
+  (* Test records in depth and width *)
+  let fnames = "Configurations\tLinear\tLinear time\tLinOpt\tLinOpt time\tEqui\tEqui time\tAmber\tAmber time\tL17\tComplete time" in
+  let fs = [LinearSubExt.sub; LinearSubOpt.sub; EquiSub.sub; AmberSub.sub; CompleteSub.sub] in
+  let configs = [
+    (* depth * width *)
+    (10, 100);
+    (10, 1000);
+    (10, 2000);
+    (20, 100);
+    (20, 1000);
+    (20, 2000);
+    (50, 100);
+    (50, 1000);
+    (50, 2000);
+    (100, 100);
+    (100, 1000);
+    (100, 2000)
+  ]
+  in
+  test_group fnames fs configs
+  [
+    ("rcd test3, disprove negative subtyping", RcdTest.test3);
+    ("rcd test2, prove positive subtyping", RcdTest.test2);
+    ("rcd test1, prove negative + top", RcdTest.test1)
+  ]
 
 
 

@@ -87,7 +87,7 @@ let rec subh (e:env) (m:mode) (x:typ) (y:typ) : (cmp * VSet.t) option =
 
 
 
-  (* | (Rcd fs, Rcd gs) ->
+  | (Rcd fs, Rcd gs) ->
     (* check if the keys in fs are are strict subset of gs, if so the subtyping fails *)
       if TMap.exists (fun g _ -> not (TMap.mem g fs)) gs then None
       else
@@ -106,11 +106,11 @@ let rec subh (e:env) (m:mode) (x:typ) (y:typ) : (cmp * VSet.t) option =
               match compose_cmp (c_cur, evs_cur) (c_prev, evs_prev) with
               | Some c -> Some (c, VSet.union evs_cur evs_prev)
               | None -> None
-      ) fs (Some (Eq, VSet.empty)) *)
+      ) fs (Some (Eq, VSet.empty))
 
 
     (* an attempt to improve *)
-    | (Rcd fs, Rcd gs) ->
+    (* | (Rcd fs, Rcd gs) ->
       (* check if the keys in fs are are strict subset of gs, if so the subtyping fails *)
       if TMap.exists (fun g _ -> not (TMap.mem g fs)) gs then None
       else
@@ -133,7 +133,7 @@ let rec subh (e:env) (m:mode) (x:typ) (y:typ) : (cmp * VSet.t) option =
                 match compose_cmp (c_cur, es_cur) (c_prev, es_prev) with
                 | Some c -> Some (c, VSet.union es_cur es_prev)
                 | None -> None
-        ) cm_res (Some (Eq, VSet.empty))
+        ) cm_res (Some (Eq, VSet.empty)) *)
 
 
         (* if TMap.exists (fun g _ -> not (TMap.mem g fs)) gs then None

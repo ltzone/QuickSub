@@ -17,8 +17,6 @@ mu b. {
   l1 : base,
   l2 : b -> base
 }
-
-
 *)
 let rcd_typ_gen1 depth width contra_base base =
   let rec aux idx dep =
@@ -35,6 +33,34 @@ let rcd_typ_gen1 depth width contra_base base =
 
 
 
+
+(* 
+generate
+
+base type + contravariant type
+
+mu b. {
+  mu a. {
+    l1: base,
+    l2: Top -> base
+    ...
+  },
+  l1 : base,
+  l2 : Top -> base
+}
+*)
+let rcd_typ_gen1_top depth width contra_base base =
+  let rec aux idx dep =
+    let rcd_gen = map_of_list (
+      List.map (fun i -> (make_str_label idx ^ "_" ^ make_str_label i, base)) (range 0 width) @
+      List.map (fun i -> (make_str_label idx ^ "_" ^ make_str_label i, Fun (Top, contra_base))) (range width (width + width))
+      ) in
+    if dep = 0 then 
+      Rec (idx, Rcd rcd_gen)
+    else
+      Rec (idx, Rcd (TMap.add (make_str_label idx) (aux (idx + 1) (dep - 1)) rcd_gen))
+  in
+  aux 0 depth
 (* 
 generate
 
@@ -94,7 +120,7 @@ let test_wrapper ?(print=false) n t1 t2  =
     amber_res (amber_end -. amber_start)
 
 (* successful config *)
-let test1 () =
+(* let test1 () =
   let depth = [1; 2; 4; 6; 8; 10; 20; 30] in
   let width = [100; 200; 500; 1000; 2000; 3000; 4000] in
   List.iter (fun d ->
@@ -114,5 +140,71 @@ let test2 () =
     let t1 = rcd_typ_gen2 d w Nat Nat in
     let t2 = rcd_typ_gen2 d w Real Real in
     test_wrapper (Printf.sprintf "rcd_typ_gen2 %d\t%d" d w) t1 t2
-  ) width) depth
+  ) width) depth *)
 
+
+
+let test1 fs config = 
+  (* 
+  base type + contravariant type
+  mu b. {
+    mu a. {
+      l1: Real,
+      l2: Nat -> a
+      ...
+    },
+    l1 : Real,
+    l2 : Nat -> b
+  } <: 
+  mu b. {
+    mu a. {
+      l1: Nat,
+      l2: Real -> a
+      ...
+    },
+    l1 : Nat,
+    l2 : Real -> b
+  }
+  *)
+  let (d, w) = config in
+  let t1 = rcd_typ_gen2 d w Real Nat in
+  let t2 = rcd_typ_gen2 d w Nat Real in
+  Tests.test_wrap fs (Printf.sprintf "(%d,%d)" d w) t1 t2
+  
+
+let test2 fs config = 
+  (* 
+  base type + covariant type
+  mu b. {
+    mu a. {
+      l1: Real,
+      l2: a -> Nat
+      ...
+    },
+    l1 : Real,
+    l2 : b -> Nat
+  } <: 
+  mu b. {
+    mu a. {
+      l1: Real,
+      l2: Top -> Nat
+      ...
+    },
+    l1 : Real,
+    l2 : Top -> Nat
+  }
+  *)
+  let (d, w) = config in
+  let t1 = rcd_typ_gen2 d w Real Nat in
+  let t2 = rcd_typ_gen2 d w Real Real in
+  Tests.test_wrap fs (Printf.sprintf "(%d,%d)" d w) t1 t2
+
+
+
+let test3 fs config = 
+  (* disprove: contravariant type
+  *)
+  let (d, w) = config in
+  let t1 = rcd_typ_gen1 d w Real Nat in
+  let t2 = rcd_typ_gen1 d w Real Real in
+  Tests.test_wrap fs (Printf.sprintf "(%d,%d)" d w) t1 t2

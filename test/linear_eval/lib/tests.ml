@@ -12,7 +12,7 @@ let test_wrap ?(print=false) (fs: (typ -> typ -> bool) list) n t1 t2  =
     print_string "t2 := ";
     print_typ t2;
     print_endline "") else ());
-  Printf.printf "%u\t" n;
+  Printf.printf "%s\t" n;
   List.iter (fun f -> 
     let start = Unix.gettimeofday () in
     let alarm = Gc.create_alarm (fun () ->
@@ -80,23 +80,23 @@ let test_wrapper ?(print=false) n t1 t2  =
   
   (* Printf.printf "%u\t%B\t%f\t%B\t%f\t%B\t%f\n" n linear_res (linear_end -. linear_start) complete_res (complete_end -. complete_start) amber_res (amber_end -. amber_start) *)
 
-
+let string_of_int n = Printf.sprintf "(  %d  )" n
 
 (* disprove: mu a. a -> mu b. b -> .... Nat <: mu a. a -> mu b. b -> .... Real *)
 let test1 fs (n:int) = 
   let t1, t2 = deep_subtyp_gen n Nat Real in
-  test_wrap fs n t1 t2
+  test_wrap fs (string_of_int n) t1 t2
 
 
 (* Test2: prove: mu a. a -> mu b. b -> .... Nat <: mu a. a -> mu b. b -> .... Nat *)
 let test2 fs (n:int) = 
   let t1, t2 = deep_subtyp_gen n Nat Nat in
-  test_wrap fs n t1 t2
+  test_wrap fs (string_of_int n) t1 t2
 
 (* Test3: prove: Real -> mu a. Real -> ... mu z. Real -> z <:  Nat -> mu a. Nat -> ... mu z. Nat -> z  *)
 let test3 fs (n:int) = 
   let t1, t2 = deep_subtyp_pos_gen n Real Nat in
-  test_wrap fs n t1 t2
+  test_wrap fs (string_of_int n) t1 t2
 
 
 (* Test4: disprove mu a. Nat -> (mu b. Nat -> ... -> a ,, b) <: mu a. Real -> (mu b. Real -> ... -> a ,, b ,, ... ,, z) 
@@ -105,12 +105,12 @@ let test3 fs (n:int) =
 *)
 let test4 fs (n:int) = 
   let t1, t2 = deep_subtyp_pos_mul_gen n Nat Real in
-  test_wrap fs n t1 t2
+  test_wrap fs (string_of_int n) t1 t2
 
 (* Test5: prove mu a. Real -> (mu b. Real -> ... -> a ,, b) <: mu a. Nat -> (mu b. Nat -> ... -> a ,, b ,, ... ,, z) *)
 let test5 fs (n:int) = 
   let t1, t2 = deep_subtyp_pos_mul_gen n Real Nat in
-  test_wrap fs n t1 t2
+  test_wrap fs (string_of_int n) t1 t2
 
 
 (* Test6: prove mu a. Nat -> (mu b. Nat -> ... -> a ,, b) <: mu a. Nat -> (mu b. Nat -> ... -> a ,, b ,, ... ,, z) 
@@ -120,30 +120,30 @@ because we execute the refl test first
 *)
 let test6 fs (n:int) = 
   let t1, t2 = deep_subtyp_pos_mul_gen n Real Real in
-  test_wrap fs n t1 t2
+  test_wrap fs (string_of_int n) t1 t2
 
 
 let test7 fs (n:int) = 
   let t1, t2 = composite_gen 10 (n / 10) Real Nat in
-  test_wrap fs n t1 t2
+  test_wrap fs (string_of_int n) t1 t2
 
 
 
 let test_rcd fs (n:int) = 
   (* Real ->a , a -> Real <:  Real -> a, a -> Real *)
   let t1, t2 = record_gen n Nat Real Real Real  in
-  test_wrap fs n t1 t2
+  test_wrap fs (string_of_int n) t1 t2
 
 
 let test_rcd_top fs (n:int) = 
   (* Real ->a , Top -> Real <:  Real -> a, a -> Real *)
   let t1, t2 = record_gen n Real Real Real Real  in
-  test_wrap fs n t1 t2
+  test_wrap fs (string_of_int n) t1 t2
 
 let test_rcd_pos fs (n:int) = 
   (* Real ->a  <:  Real -> a *)
   let t1, t2 = record_gen_pos n Real Nat   in
-  test_wrap fs n t1 t2
+  test_wrap fs (string_of_int n) t1 t2
   
 
 (* let f = LinearSubExt.subh LinearSubExt.VMap.empty LinearSubExt.Pos *)
