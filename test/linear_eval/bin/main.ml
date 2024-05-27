@@ -26,16 +26,16 @@ let main =
   in
   test_group fnames fs depths
     [
-      ("disprove: mu a. a -> mu b. b -> .... Nat <: mu a. a -> mu b. b -> .... Real", Tests.test1);
+      (* ("disprove: mu a. a -> mu b. b -> .... Nat <: mu a. a -> mu b. b -> .... Real", Tests.test1);
       ("prove: mu a. a -> mu b. b -> .... Nat <: mu a. a -> mu b. b -> .... Nat", Tests.test2);
       ("prove: Real -> mu a. Real -> ... mu z. Real -> z <:  Nat -> mu a. Nat -> ... mu z. Nat -> z", Tests.test3);
       ("disprove mu a. Nat -> (mu b. Nat -> ... -> a ,, b) <: mu a. Real -> (mu b. Real -> ... -> a ,, b ,, ... ,, z)", Tests.test4);
       ("prove mu a. Real -> (mu b. Real -> ... -> a ,, b) <: mu a. Nat -> (mu b. Nat -> ... -> a ,, b ,, ... ,, z)", Tests.test5);
-      ("prove mu a. Nat -> (mu b. Nat -> ... -> a ,, b) <: mu a. Nat -> (mu b. Nat -> ... -> a ,, b ,, ... ,, z) ", Tests.test6);
+      ("prove mu a. Nat -> (mu b. Nat -> ... -> a ,, b) <: mu a. Nat -> (mu b. Nat -> ... -> a ,, b ,, ... ,, z) ", Tests.test6); *)
       (* ("a mixed test", Tests.test7)  *)
-      ("rcd with negative variables", Tests.test_rcd);
+      (* ("rcd with negative variables", Tests.test_rcd);
       ("rcd with top + negative variables", Tests.test_rcd_top);
-      ("rcd with positive variables", Tests.test_rcd_pos)
+      ("rcd with positive variables", Tests.test_rcd_pos) *)
     ];
 
   (* Test records in depth and width *)
@@ -43,6 +43,12 @@ let main =
   let fs = [LinearSubExt.sub; LinearSubOpt.sub; EquiSub.sub; AmberSub.sub; CompleteSub.sub] in
   let configs = [
     (* depth * width *)
+    (1, 100);
+    (1, 1000);
+    (1, 2000);
+    (5, 100);
+    (5, 1000);
+    (5, 2000);
     (10, 100);
     (10, 1000);
     (10, 2000);
@@ -59,6 +65,7 @@ let main =
   in
   test_group fnames fs configs
   [
+    ("rcd test2', disprove positive subtyping with a slight modification", RcdTest.test2');
     ("rcd test3, disprove negative subtyping", RcdTest.test3);
     ("rcd test2, prove positive subtyping", RcdTest.test2);
     ("rcd test1, prove negative + top", RcdTest.test1)

@@ -92,6 +92,25 @@ let rcd_typ_gen2 depth width conv_base base =
   aux 0 depth
 
 
+let rcd_typ_gen2' depth width conv_base base bbase =
+  (* bbase is the final small change *)
+  let rec aux idx dep =
+    let rcd_gen = map_of_list (
+      List.map (fun i -> (make_str_label idx ^ "_" ^ make_str_label i, base)) (range 0 width) @
+      List.map (fun i -> (make_str_label idx ^ "__" ^ make_str_label i, Fun (conv_base, Var idx))) (range width (width + width))
+      ) in
+    let rcd_gen_base = map_of_list (
+      List.map (fun i -> (make_str_label idx ^ "_" ^ make_str_label i, base)) (range 0 width) @
+      List.map (fun i -> (make_str_label idx ^ "__" ^ make_str_label i, Fun (conv_base, bbase))) (range width (width + width))
+      ) in
+    if dep = 0 then 
+      Rec (idx, Rcd rcd_gen_base)
+    else
+      Rec (idx, Rcd (TMap.add (make_str_label idx) (aux (idx + 1) (dep - 1)) rcd_gen))
+  in
+  aux 0 depth
+
+
 
 let test_wrapper ?(print=false) n t1 t2  = 
   let linear_start = Unix.gettimeofday () in
@@ -169,7 +188,7 @@ let test1 fs config =
   let (d, w) = config in
   let t1 = rcd_typ_gen2 d w Real Nat in
   let t2 = rcd_typ_gen2 d w Nat Real in
-  Tests.test_wrap fs (Printf.sprintf "(%d,%d)" d w) t1 t2
+  Tests.test_wrap fs (Printf.sprintf "(%4d,%4d)" d w) t1 t2
   
 
 let test2 fs config = 
@@ -197,7 +216,39 @@ let test2 fs config =
   let (d, w) = config in
   let t1 = rcd_typ_gen2 d w Real Nat in
   let t2 = rcd_typ_gen2 d w Real Real in
-  Tests.test_wrap fs (Printf.sprintf "(%d,%d)" d w) t1 t2
+  Tests.test_wrap fs (Printf.sprintf "(%4d,%4d)" d w) t1 t2
+
+
+
+let test2' fs config = 
+    (* 
+    base type + covariant type + small change
+    mu b. {
+      mu a. {
+        l1: Real,
+        l2: a -> Nat
+        ...
+      },
+      l1 : Real,
+      l2 : b -> Nat
+    } <: 
+    mu b. {
+      mu a. {
+        l1: Real,
+        l2: Top -> Nat
+        ...
+      },
+      l1 : Real,
+      l2 : Top -> Nat
+    }
+    *)
+    let (d, w) = config in
+    let t1 = rcd_typ_gen2' d w Real Nat Real in
+    let t2 = rcd_typ_gen2' d w Real Real Nat in
+    Tests.test_wrap fs (Printf.sprintf "(%4d,%4d)" d w) t1 t2
+  
+  
+
 
 
 
@@ -207,4 +258,4 @@ let test3 fs config =
   let (d, w) = config in
   let t1 = rcd_typ_gen1 d w Real Nat in
   let t2 = rcd_typ_gen1 d w Real Real in
-  Tests.test_wrap fs (Printf.sprintf "(%d,%d)" d w) t1 t2
+  Tests.test_wrap fs (Printf.sprintf "(%4d,%4d)" d w) t1 t2
