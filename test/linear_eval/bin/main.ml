@@ -26,16 +26,16 @@ let main =
   in
   test_group fnames fs depths
     [
-      (* ("disprove: mu a. a -> mu b. b -> .... Nat <: mu a. a -> mu b. b -> .... Real", Tests.test1);
+      ("disprove: mu a. a -> mu b. b -> .... Nat <: mu a. a -> mu b. b -> .... Real", Tests.test1);
       ("prove: mu a. a -> mu b. b -> .... Nat <: mu a. a -> mu b. b -> .... Nat", Tests.test2);
       ("prove: Real -> mu a. Real -> ... mu z. Real -> z <:  Nat -> mu a. Nat -> ... mu z. Nat -> z", Tests.test3);
       ("disprove mu a. Nat -> (mu b. Nat -> ... -> a ,, b) <: mu a. Real -> (mu b. Real -> ... -> a ,, b ,, ... ,, z)", Tests.test4);
       ("prove mu a. Real -> (mu b. Real -> ... -> a ,, b) <: mu a. Nat -> (mu b. Nat -> ... -> a ,, b ,, ... ,, z)", Tests.test5);
-      ("prove mu a. Nat -> (mu b. Nat -> ... -> a ,, b) <: mu a. Nat -> (mu b. Nat -> ... -> a ,, b ,, ... ,, z) ", Tests.test6); *)
-      (* ("a mixed test", Tests.test7)  *)
-      (* ("rcd with negative variables", Tests.test_rcd);
+      ("prove mu a. Nat -> (mu b. Nat -> ... -> a ,, b) <: mu a. Nat -> (mu b. Nat -> ... -> a ,, b ,, ... ,, z) ", Tests.test6);
+      ("a mixed test", Tests.test7) ;
+      ("rcd with negative variables", Tests.test_rcd);
       ("rcd with top + negative variables", Tests.test_rcd_top);
-      ("rcd with positive variables", Tests.test_rcd_pos) *)
+      ("rcd with positive variables", Tests.test_rcd_pos)
     ];
 
   (* Test records in depth and width *)
