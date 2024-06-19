@@ -23,7 +23,8 @@ let test_wrap ?(print=false) (fs: (typ -> typ -> bool) list) n t1 t2  =
       Gc.delete_alarm alarm;
       let endt = Unix.gettimeofday () in
       if timeout_flag then
-        Printf.printf "N/A   \tTimeout   \t"
+        (* Printf.printf "N/A   \tTimeout   \t" *)
+        Printf.printf "%B\t%f\t" res (endt -. start)
       else
         Printf.printf "%B\t%f\t" res (endt -. start)
   ) fs;
@@ -80,7 +81,9 @@ let test_wrapper ?(print=false) n t1 t2  =
   
   (* Printf.printf "%u\t%B\t%f\t%B\t%f\t%B\t%f\n" n linear_res (linear_end -. linear_start) complete_res (complete_end -. complete_start) amber_res (amber_end -. amber_start) *)
 
-let string_of_int n = Printf.sprintf "(  %d  )" n
+(* let string_of_int n =  *)
+  (* Printf.sprintf "(  %d  )" n *)
+
 
 (* disprove: mu a. a -> mu b. b -> .... Nat <: mu a. a -> mu b. b -> .... Real *)
 let test1 fs (n:int) = 

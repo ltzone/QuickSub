@@ -188,7 +188,7 @@ let test1 fs config =
   let (d, w) = config in
   let t1 = rcd_typ_gen2 d w Real Nat in
   let t2 = rcd_typ_gen2 d w Nat Real in
-  Tests.test_wrap fs (Printf.sprintf "(%4d,%4d)" d w) t1 t2
+  Tests.test_wrap fs (Printf.sprintf "%4d\t%4d" d w) t1 t2
   
 
 let test2 fs config = 
@@ -216,7 +216,7 @@ let test2 fs config =
   let (d, w) = config in
   let t1 = rcd_typ_gen2 d w Real Nat in
   let t2 = rcd_typ_gen2 d w Real Real in
-  Tests.test_wrap fs (Printf.sprintf "(%4d,%4d)" d w) t1 t2
+  Tests.test_wrap fs (Printf.sprintf "%4d\t%4d" d w) t1 t2
 
 
 
@@ -245,7 +245,7 @@ let test2' fs config =
     let (d, w) = config in
     let t1 = rcd_typ_gen2' d w Real Nat Real in
     let t2 = rcd_typ_gen2' d w Real Real Nat in
-    Tests.test_wrap fs (Printf.sprintf "(%4d,%4d)" d w) t1 t2
+    Tests.test_wrap fs (Printf.sprintf "%4d\t%4d" d w) t1 t2
   
   
 
@@ -258,4 +258,4 @@ let test3 fs config =
   let (d, w) = config in
   let t1 = rcd_typ_gen1 d w Real Nat in
   let t2 = rcd_typ_gen1 d w Real Real in
-  Tests.test_wrap fs (Printf.sprintf "(%4d,%4d)" d w) t1 t2
+  Tests.test_wrap fs (Printf.sprintf "%4d\t%4d" d w) t1 t2
