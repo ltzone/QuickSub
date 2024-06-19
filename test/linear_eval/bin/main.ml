@@ -40,13 +40,14 @@ let main =
 
   (* Test records in depth and width *)
   (* let fnames = "Configurations\tLinear\tLinear time\tLinOpt\tLinOpt time\tEqui\tEqui time\tAmber\tAmber time\tL17\tComplete time" in *)
-  let fnames = "Configurations\tLinear\tLinear time\tEqui\tEqui time\tAmber\tAmber time\tL17\tComplete time" in
+  let fnames = " Depth\tWidth\tLinear\tLinearTime\tEqui\tEquiTime\tAmber\tAmberTime\tL17\tCompleteTime" in
   let fs = [LinearSubExt.sub; 
   (* LinearSubOpt.sub;  *)
-  EquiSub.sub; AmberSub.sub; CompleteSub.sub] in
+  EquiSub.sub; AmberSub.sub; 
+  CompleteSub.sub] in
   let configs = [
     (* depth * width *)
-    (1, 100);
+    (* (1, 100);
     (1, 1000);
     (1, 2000);
     (5, 100);
@@ -61,9 +62,13 @@ let main =
     (50, 100);
     (50, 1000);
     (50, 2000);
-    (100, 100);
+    (100, 100); *)
     (100, 1000);
-    (100, 2000)
+    (* (100, 2000);
+    (200, 100);
+    (200, 1000); 
+    (200, 2000); *)
+
   ]
   in
   test_group fnames fs configs

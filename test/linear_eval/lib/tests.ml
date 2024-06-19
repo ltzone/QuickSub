@@ -2,7 +2,7 @@ open Defs;;
 
 exception Timeout
 
-let max_time = 2.
+let max_time = 120.
 
 let test_wrap ?(print=false) (fs: (typ -> typ -> bool) list) n t1 t2  =
 (if print then

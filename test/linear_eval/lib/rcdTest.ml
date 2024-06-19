@@ -82,12 +82,12 @@ let rcd_typ_gen2 depth width conv_base base =
   let rec aux idx dep =
     let rcd_gen = map_of_list (
       List.map (fun i -> (make_str_label idx ^ "_" ^ make_str_label i, base)) (range 0 width) @
-      List.map (fun i -> (make_str_label idx ^ "_" ^ make_str_label i, Fun (conv_base, Var idx))) (range width (width + width))
+      List.map (fun i -> (make_str_label idx ^ "__" ^ make_str_label i, Fun (conv_base, Var idx))) (range width (width + width))
       ) in
     if dep = 0 then 
       Rec (idx, Rcd rcd_gen)
     else
-      Rec (idx, Rcd (TMap.add (make_str_label idx) (aux (idx + 1) (dep - 1)) rcd_gen))
+      Rec (idx, Rcd (TMap.add (make_str_label idx ^ "_rec") (aux (idx + 1) (dep - 1)) rcd_gen))
   in
   aux 0 depth
 
