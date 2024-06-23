@@ -100,34 +100,6 @@ let rec subh (evs: bool Array.t) (fvt: bool Array.t) (e:env) (m:mode) (x:typ) (y
                 | Some c -> Some (c, is_empty_prev && is_empty_cur)
                 | None -> None)
            fs (Some (Eq, true))
-
-  
-
-    (* an attempt to improve *)
-  (* | (Rcd fs, Rcd gs) ->
-    (* check if the keys in fs are are strict subset of gs, if so the subtyping fails *)
-    if TMap.exists (fun g _ -> not (TMap.mem g fs)) gs then None
-    else
-      (* iterate on elements of fs *)
-      let cm_res =
-        TMap.mapi (fun l t1  -> if TMap.mem l gs then 
-            subh evs fvt e m t1 (TMap.find l gs)
-          else Some (Lt, true)
-          ) fs in 
-      TMap.fold (fun _ cur_res prev_res ->
-        match cur_res with
-        | None -> None
-        | Some (c_cur, is_empty_cur) ->
-        match prev_res with
-        | None -> None
-        | Some (c_prev, is_empty_prev) ->
-          match compose_cmp (c_prev, is_empty_prev) (c_cur, is_empty_cur) with
-          | Some c -> Some (c, is_empty_prev && is_empty_cur)
-          | None -> None
-      ) cm_res (Some (Eq, true))
-
- *)
-
   | _, _ -> None
 
 

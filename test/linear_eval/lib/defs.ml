@@ -179,20 +179,6 @@ let record_gen width b1_contra b1_conv b2_contra b2_conv =
   (Rec (0, Rcd fs1), Rec (0, Rcd fs2))
 
 
-let record_gen_top width b1_contra b1_conv b2_contra b2_conv = 
-  let rec helper (width: int) : (typ TMap.t * typ TMap.t) =
-    if width = 0 then TMap.empty, TMap.empty else
-      let f = make_str_label width in
-      let fs1, fs2 = helper (width - 1) in
-      (( fs1 |> TMap.add f (Fun (b1_conv, Var 0))
-          |> TMap.add (f ^ "'") (Fun (Top, b1_contra))),
-        ( fs2 |> TMap.add f (Fun (b2_conv, Var 0))
-          |> TMap.add (f ^ "'") (Fun (Var 0, b2_contra)))) in
-            (* (f ^ "'", Fun (Var 0, b1_contra)) :: fs1, 
-        (f, Fun (b2_conv, Var 0)) ::  (f ^ "'", Fun (Var 0, b2_contra)) :: fs2) in *)
-  let fs1, fs2 = helper width in
-  (Rec (0, Rcd fs1), Rec (0, Rcd fs2))
-
 
 let record_gen_pos width b1_conv b2_conv = 
   let rec helper (width: int) : (typ TMap.t * typ TMap.t) =

@@ -33,39 +33,8 @@ let rec subst_label (i: int) (x: typ) (y: typ) =
   | Top -> Top
   | Rcd ls -> Rcd (TMap.map (fun a -> subst_label i a y) ls)
 
-let rec lift_typ (ofs: int) (max_idx: int) (x: typ) : typ * int =
-  (* return the lifted type and the maximal index after updates *)
-  match x with
-  | Var i -> Var (i + ofs), max max_idx (i + ofs)
-  | Nat -> Nat, max_idx
-  | Real -> Real, max_idx
-  | Fun (a, b) ->
-      let a', max_idx' = lift_typ ofs max_idx a in
-      let b', max_idx'' = lift_typ ofs max_idx' b in
-      Fun (a', b'), max_idx''
-  | Prod (a, b) ->
-      let a', max_idx' = lift_typ ofs max_idx a in
-      let b', max_idx'' = lift_typ ofs max_idx' b in
-      Prod (a', b'), max_idx''
-  | Sum (a, b) ->
-      let a', max_idx' = lift_typ ofs max_idx a in
-      let b', max_idx'' = lift_typ ofs max_idx' b in
-      Sum (a', b'), max_idx''
-  | Rec (k, a) ->
-      let a', max_idx' = lift_typ ofs max_idx a in
-      Rec (k + ofs, a'), max_idx'
-  | Top -> Top, max_idx
-  | Rcd ls ->
-      let ls', max_idx' = TMap.fold (fun k a (acc, max_idx) ->
-        let a', max_idx' = lift_typ ofs max_idx a in
-        TMap.add k a' acc, max max_idx max_idx'
-      ) ls (TMap.empty, max_idx) in
-      Rcd ls', max_idx'
-
-
 
 let rec subh (i: int) (e:env) (x:typ) (y:typ) : bool * int =
-  (* print_endline ("subh: " ^ string_of_typ x ^ " " ^ string_of_typ y); *)
   match (x, y) with
   | (Nat, Nat) -> true, i
   | (Real, Real) -> true, i
@@ -88,26 +57,18 @@ let rec subh (i: int) (e:env) (x:typ) (y:typ) : bool * int =
       (* subh i e a1 b1 && subh i e a2 b2 *)
   | (Var k, Var j) when k = j -> 
       true, i
-  | (Rec (k, a), Rec (j, b))  ->
-      (* when k = j ->  *)
-        (* TODO: alpha renaming?? or assumption? *)
+  | (Rec (k, a), Rec (j, b)) when k = j -> (* TODO: alpha renaming?? or assumption? *)
       let fresh_i = i + 1 in
-      let (a_lift, i1) = lift_typ i fresh_i (rename k fresh_i a) in
-      let (b_lift, i2) = lift_typ i i1 (rename j fresh_i b) in
-      let fresh_i' = i2 + 1 in
-      let a_subst = subst_label k a (Prod (Var fresh_i', a_lift)) in
-      let b_subst = subst_label j b (Prod (Var fresh_i', b_lift)) in
+      let a_subst = subst_label k a (Prod (Var fresh_i, rename k fresh_i a)) in
+      let b_subst = subst_label j b (Prod (Var fresh_i, rename j fresh_i b)) in
       subh fresh_i e a_subst b_subst
-  | Rcd fs, Rcd gs ->
-      TMap.for_all (fun l g -> TMap.mem l fs && fst (subh i e (TMap.find l fs) g)) gs, i
-       (* TOFIX: the i should be accummulated  *)
   | _, _ -> false, i
     
 
 
 let sub (x:typ) (y:typ) : bool = 
-  (* let x = lev_typ x in
-  let y = lev_typ y in *)
+  let x = lev_typ x in
+  let y = lev_typ y in
 
   fst  (subh (max (numVars x) (numVars y)) [] x y)
 
