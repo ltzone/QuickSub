@@ -4,6 +4,7 @@ type cetyp = CENat | CEReal | CEFun of cetyp * cetyp
            | CEVar of int | CEProd of cetyp * cetyp * bool
            | CESum of cetyp * cetyp * bool
            | CERcd of (cetyp TMap.t) * bool
+           | CETop
 
 
 let isUninhabited (t: cetyp) (u: bool array) : bool =
@@ -35,7 +36,9 @@ let rec init (t:typ)
       Array.set u n (isUninhabited (init t ut u true) u);
       if b then () else Array.set ut n (init t ut u false);
       CEVar n
-  | Top -> failwith "the completeness algorithm does not allow Top"
+  | Top -> 
+      (* failwith "the completeness algorithm does not allow Top" *)
+      CETop
   | Rcd fs ->
       let fs' = TMap.map (fun t -> (init t ut u b)) fs in
         CERcd (fs', TMap.exists (fun _ t -> isUninhabited t u) fs')
@@ -61,6 +64,7 @@ let sub (t1: typ) (t2: typ) =
       | (CENat, CENat) -> true (* S-Nat *)
       | (CEReal, CEReal) -> true (* S-Real *)
       | (CENat, CEReal) -> true (* S-Base *)
+      | (_, CETop) -> true (* S-Top *)
       | (CEFun (t1, t2), CEFun (t1', t2')) -> (* S-Fun *)
           subh (t1', ut2, u2) (t1, ut1, u1)  (s2, s1) &&
           subh (t2, ut1, u1) (t2', ut2, u2) (s1, s2)
