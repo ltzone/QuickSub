@@ -16,17 +16,25 @@ let test_group fnames (fs:(Defs.typ -> Defs.typ -> bool) list) n =
 
 let main =
   (* Test normal *)
-  let fnames = "Configurations\tLinear\tLinearTime\tLinOpt\tLinOptTime\tNominal\tNominalTime\tEqui\tEquiTime\tAmber\tAmberTime\tL17\tCompleteTime" in
-  (* let fnames = "Configurations\tLinear\tLinear time\tLinOpt\tLinOpt time\tEqui\tEqui time\tAmber\tAmber time\tL17\tComplete time" in *)
-  let fs = [LinearSubExt.sub; LinearSubOpt.sub; NominalSub.sub; EquiSub.sub; AmberSub.sub; CompleteSub.sub] in
+  (* let fnames = "Configurations\tLinear\tLinearTime\tLinOpt\tLinOptTime\tNominal\tNominalTime\tEqui\tEquiTime\tAmber\tAmberTime\tL17\tCompleteTime" in *)
+  let fnames = "Configurations\tLinear\tLinear time\tLinOpt\tLinOpt time\tEqui\tEqui time\tAmber\tAmber time\tL17\tComplete time" in
+  let fs = [
+      LinearSubExt.sub; 
+      LinearSubOpt.sub; 
+      NominalSub2.sub; 
+      EquiSub.sub; 
+      AmberSub.sub; 
+      CompleteSub.sub
+    ] in
   let depths = 
     (* [10;100;1000;2000;5000] *)
     [10;100;1000;2000;3000;4000;5000]
+    (* [5000] *)
     (* ;6000;7000;8000;9000;10000] *)
   in
   test_group fnames fs depths
     [
-      (* ("disprove: mu a. a -> mu b. b -> .... Nat <: mu a. a -> mu b. b -> .... Real", Tests.test1);
+      ("disprove: mu a. a -> mu b. b -> .... Nat <: mu a. a -> mu b. b -> .... Real", Tests.test1);
       ("prove: mu a. a -> mu b. b -> .... Nat <: mu a. a -> mu b. b -> .... Nat", Tests.test2);
       ("prove: Real -> mu a. Real -> ... mu z. Real -> z <:  Nat -> mu a. Nat -> ... mu z. Nat -> z", Tests.test3);
       ("disprove mu a. Nat -> (mu b. Nat -> ... -> a ,, b) <: mu a. Real -> (mu b. Real -> ... -> a ,, b ,, ... ,, z)", Tests.test4);
@@ -35,7 +43,7 @@ let main =
       ("a mixed test", Tests.test7) ;
       ("rcd with negative variables", Tests.test_rcd);
       ("rcd with top + negative variables", Tests.test_rcd_top);
-      ("rcd with positive variables", Tests.test_rcd_pos) *)
+      ("rcd with positive variables", Tests.test_rcd_pos)
     ];
 
   (* Test records in depth and width *)
