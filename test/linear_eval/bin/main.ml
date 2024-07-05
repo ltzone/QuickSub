@@ -14,7 +14,7 @@ let test_group fnames (fs:(Defs.typ -> Defs.typ -> bool) list) n =
     List.iter (testfun fs) n
   )
 
-let test_table1 =
+let test_table1 () =
   let fnames = "No.\tLinOpt\tLinOptTime\tNominal\tNominalTime\tEqui\tEquiTime\tAmber\tAmberTime\tL17\tCompleteTime" in
   let fs = [
     LinearSubOpt.sub; 
@@ -23,6 +23,27 @@ let test_table1 =
     AmberSub.sub; 
     CompleteSub.sub
   ] in 
+  let depth = 2000 in
+  let tests = [
+    ("1", Tests.test1_gen);
+    ("2", Tests.test2_gen);
+    ("3", Tests.test3_gen);
+    ("4", Tests.test4_gen);
+    ("5", Tests.test5_gen);
+    ("6", Tests.test6_gen);
+    ("7", Tests.test7_gen);
+    ("8", Tests.test8_gen);
+  ] in
+  Printf.printf "depth = %d\n" depth;
+  print_endline fnames;
+  List.iter (fun (n, testcase) ->
+    let t1, t2 = (testcase depth) in
+    Tests.test_wrap ~print:false fs n t1 t2)
+    tests
+
+
+let collect_smax () =
+  let f = LinearSubExt.sub0 ~profile:true in
   let depth = 100 in
   let tests = [
     ("1", Tests.test1_gen);
@@ -34,17 +55,16 @@ let test_table1 =
     ("7", Tests.test7_gen);
     ("8", Tests.test8_gen);
   ] in
-  print_endline fnames;
+  Printf.printf "depth = %d\n" depth;
   List.iter (fun (n, testcase) ->
+    Printf.printf "Test %s\n" n;
     let t1, t2 = (testcase depth) in
-    Tests.test_wrap ~print:false fs n t1 t2)
-    tests
-
-
+    let _ = f t1 t2 in
+    () ) tests
 
   
 
-let playground =
+let playground () =
   (* Test normal *)
   (* let fnames = "Configurations\tLinear\tLinearTime\tLinOpt\tLinOptTime\tNominal\tNominalTime\tEqui\tEquiTime\tAmber\tAmberTime\tL17\tCompleteTime" in *)
   let fnames = "Config\tLinear\tLinear time\tLinOpt\tLinOpt time\tNominal\tNominalTime\tEqui\tEqui time\tAmber\tAmber time\tL17\tComplete time" in
@@ -195,4 +215,6 @@ let playground =
 
 
 
-let main = test_table1
+let main = 
+    (* test_table1 () *)
+    collect_smax ()
