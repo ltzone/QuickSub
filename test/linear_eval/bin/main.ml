@@ -15,15 +15,15 @@ let test_group fnames (fs:(Defs.typ -> Defs.typ -> bool) list) n =
   )
 
 let test_table1 () =
-  let fnames = "No.\tLinOpt\tLinOptTime\tNominal\tNominalTime\tEqui\tEquiTime\tAmber\tAmberTime\tL17\tCompleteTime" in
+  let fnames = "No.\tLinOpt\tLinOptTime\tNominal\tNominalTime\tEqui\tEquiTime\tAmber\tAmberTime\tComplete\tCompleteTime" in
   let fs = [
     LinearSubOpt.sub; 
     NominalSub2.sub; 
-    EquiSub.sub; 
+    (* EquiSub.sub;  *)
     AmberSub.sub; 
     CompleteSub.sub
   ] in 
-  let depth = 2000 in
+  let depth = 5000 in
   let tests = [
     ("1", Tests.test1_gen);
     ("2", Tests.test2_gen);
@@ -62,16 +62,44 @@ let collect_smax () =
     let _ = f t1 t2 in
     () ) tests
 
-  
+
+let test_plot1 () = 
+  let fnames_wo_nominal = 
+    ("No.\tLinOpt\tLinOptTime\tEqui\tEquiTime\tAmber\tAmberTime\tComplete\tCompleteTime",
+      [ LinearSubOpt.sub; EquiSub.sub; AmberSub.sub; CompleteSub.sub] ) in
+  let fnames_wo_equi = 
+    ("No.\tLinOpt\tLinOptTime\tNominal\tNominalTime\tAmber\tAmberTime\tComplete\tCompleteTime",
+      [ LinearSubOpt.sub; NominalSub2.sub; AmberSub.sub; CompleteSub.sub]) in
+  let fnames_wo_nominal_equi = 
+    ("No.\tLinOpt\tLinOptTime\tAmber\tAmberTime\tComplete\tCompleteTime",
+      [ LinearSubOpt.sub; AmberSub.sub; CompleteSub.sub]) in
+  let depths_1 = [200; 400; 600; 800; 1000] in
+  let depths_2 = [500; 1000; 1500; 2000; 2500] in
+  let depths_3 = [400; 800; 1200; 1600; 2000] in
+  let depths_4 = [100; 200; 300; 400; 500] in
+  let tests = [
+    ("1", Tests.test1_gen, depths_1, fnames_wo_nominal);
+    ("3", Tests.test3_gen, depths_2, fnames_wo_equi);
+    ("5", Tests.test5_gen, depths_3, fnames_wo_equi);
+    (* ("7", Tests.test7_gen, depths_2, fnames_wo_nominal); *)
+    ("8", Tests.test8_gen, depths_4, fnames_wo_nominal_equi)
+  ] in
+  List.iter (fun (testname, testcase, depths, (fnames, fs)) ->
+    Printf.printf "------- Test %s ------\n" testname;
+    print_endline fnames;
+    List.iter ( fun depth ->
+      let t1, t2 = (testcase depth) in
+      Tests.test_wrap ~print:false fs (string_of_int depth) t1 t2
+    ) depths) tests
 
 let playground () =
   (* Test normal *)
-  (* let fnames = "Configurations\tLinear\tLinearTime\tLinOpt\tLinOptTime\tNominal\tNominalTime\tEqui\tEquiTime\tAmber\tAmberTime\tL17\tCompleteTime" in *)
-  let fnames = "Config\tLinear\tLinear time\tLinOpt\tLinOpt time\tNominal\tNominalTime\tEqui\tEqui time\tAmber\tAmber time\tL17\tComplete time" in
+  (* let fnames = "Configurations\tLinear\tLinearTime\tLinOpt\tLinOptTime\tNominal\tNominalTime\tEqui\tEquiTime\tAmber\tAmberTime\tComplete\tCompleteTime" in *)
+  let fnames = "Config\tLinear\tLinear time\tLinOpt\tLinOpt time\tNominal\tNominalTime\tEqui\tEqui time\tAmber\tAmber time\tComplete\tComplete time" in
   let fs = [
       LinearSubExt.sub; 
       LinearSubOpt.sub; 
-      NominalSub2.sub; 
+      NominalSub.sub; 
       EquiSub.sub; 
       AmberSub.sub; 
       CompleteSub.sub
@@ -110,8 +138,8 @@ let playground () =
 
 
   (* Test records in depth and width *)
-  (* let fnames = "Configurations\tLinear\tLinear time\tLinOpt\tLinOpt time\tEqui\tEqui time\tAmber\tAmber time\tL17\tComplete time" in *)
-  let fnames = " Depth\tWidth\tLinear\tLinearTime\tEqui\tEquiTime\tAmber\tAmberTime\tL17\tCompleteTime" in
+  (* let fnames = "Configurations\tLinear\tLinear time\tLinOpt\tLinOpt time\tEqui\tEqui time\tAmber\tAmber time\tComplete\tComplete time" in *)
+  let fnames = " Depth\tWidth\tLinear\tLinearTime\tEqui\tEquiTime\tAmber\tAmberTime\tComplete\tCompleteTime" in
   let fs = [LinearSubExt.sub; 
   (* LinearSubOpt.sub;  *)
   EquiSub.sub; 
@@ -216,5 +244,6 @@ let playground () =
 
 
 let main = 
-    (* test_table1 () *)
-    collect_smax ()
+    test_table1 ()
+    (* collect_smax () *)
+    (* test_plot1 () *)
