@@ -40,7 +40,16 @@ let rec fv (t:typ) =
 
 
 
-let rec subh (e:env) (m:mode) (x:typ) (y:typ) : (cmp * VSet.t) option =
+let rec subh ?(profile=false) (evs_cnt: int ref) (e:env) (m:mode) (x:typ) (y:typ) : (cmp * VSet.t) option =
+  let subh e m x y = 
+    if profile then
+      (let res = subh evs_cnt e m x y in
+      (match res with
+      | Some (Eq, evs_res) -> evs_cnt := max (!evs_cnt) (VSet.cardinal evs_res)
+      | _ -> ());
+      res)
+    else subh  evs_cnt e m x y in
+  
   match (x, y) with
   | (Nat, Nat) -> Some (Eq, VSet.empty)
   | (Real, Real) -> Some (Eq, VSet.empty)
@@ -160,7 +169,16 @@ let rec subh (e:env) (m:mode) (x:typ) (y:typ) : (cmp * VSet.t) option =
 
   | _, _ -> None
     
-let sub (x:typ) (y:typ) : bool =
-  match subh VMap.empty Pos x y with
-  | Some _ -> true
-  | _ -> false
+let sub0 ?(profile = false) (x:typ) (y:typ) : bool =
+  if profile then
+    let evs_cnt = ref 0 in
+    let res = match subh evs_cnt VMap.empty Pos x y with
+    | Some _ -> true
+    | _ -> false in 
+    Printf.printf "Number of existential variables: %d\n" !evs_cnt;res
+  else
+    match subh (ref 0) VMap.empty Pos x y with
+    | Some _ -> true
+    | _ -> false
+
+let sub x y = sub0 ~profile:false x y

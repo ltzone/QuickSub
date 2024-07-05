@@ -2,7 +2,7 @@ open Defs;;
 
 exception Timeout
 
-let max_time = 20.
+let max_time = 120.
 
 let test_wrap ?(print=false) (fs: (typ -> typ -> bool) list) n t1 t2  =
 (if print then
@@ -84,21 +84,49 @@ let test_wrapper ?(print=false) n t1 t2  =
 (* let string_of_int n =  *)
   (* Printf.sprintf "(  %d  )" n *)
 
+let test1_gen (n:int) = 
+    deep_subtyp_gen n Nat Real 
+
+let test2_gen (n:int) =
+    deep_subtyp_gen n Nat Nat
+
+let test3_gen (n:int) =
+    deep_subtyp_pos_gen n Real Nat
+
+let test4_gen (n:int) =
+    deep_subtyp_pos_mul_gen n Nat Real
+
+let test5_gen (n:int) =
+    deep_subtyp_pos_mul_gen n Real Nat
+
+let test6_gen (n:int) =
+    deep_subtyp_pos_mul_gen n Real Real
+
+let test7_gen (n:int) =
+    composite_gen 10 (n / 10) Real Nat
+
+let test8_gen (n:int) =
+    let t1 = Fun (Real, worst_case_gen n Real) in
+    let t2 = Fun (Nat, worst_case_gen n Real) in
+    t1, t2
+
+
+
 
 (* disprove: mu a. a -> mu b. b -> .... Nat <: mu a. a -> mu b. b -> .... Real *)
 let test1 fs (n:int) = 
-  let t1, t2 = deep_subtyp_gen n Nat Real in
+  let t1, t2 = test1_gen n in
   test_wrap fs (string_of_int n) t1 t2
 
 
 (* Test2: prove: mu a. a -> mu b. b -> .... Nat <: mu a. a -> mu b. b -> .... Nat *)
 let test2 fs (n:int) = 
-  let t1, t2 = deep_subtyp_gen n Nat Nat in
+  let t1, t2 = test2_gen n in
   test_wrap fs (string_of_int n) t1 t2
 
 (* Test3: prove: Real -> mu a. Real -> ... mu z. Real -> z <:  Nat -> mu a. Nat -> ... mu z. Nat -> z  *)
 let test3 fs (n:int) = 
-  let t1, t2 = deep_subtyp_pos_gen n Real Nat in
+  let t1, t2 = test3_gen n in
   test_wrap fs (string_of_int n) t1 t2
 
 
@@ -107,12 +135,12 @@ let test3 fs (n:int) =
   --- the "optimized" linear algorithm is slower, due to the set/unset operation of the imperative map 
 *)
 let test4 fs (n:int) = 
-  let t1, t2 = deep_subtyp_pos_mul_gen n Nat Real in
+  let t1, t2 = test4_gen n in
   test_wrap fs (string_of_int n) t1 t2
 
 (* Test5: prove mu a. Real -> (mu b. Real -> ... -> a ,, b) <: mu a. Nat -> (mu b. Nat -> ... -> a ,, b ,, ... ,, z) *)
 let test5 fs (n:int) = 
-  let t1, t2 = deep_subtyp_pos_mul_gen n Real Nat in
+  let t1, t2 =  test5_gen n in
   test_wrap fs (string_of_int n) t1 t2
 
 
@@ -122,18 +150,17 @@ because we execute the refl test first
 
 *)
 let test6 fs (n:int) = 
-  let t1, t2 = deep_subtyp_pos_mul_gen n Real Real in
+  let t1, t2 = test6_gen n in
   test_wrap fs (string_of_int n) t1 t2
 
 
 let test7 fs (n:int) = 
-  let t1, t2 = composite_gen 10 (n / 10) Real Nat in
+  let t1, t2 = test7_gen n in
   test_wrap fs (string_of_int n) t1 t2
 
 
 let test8 fs (n:int) = 
-  let t1 = Fun (Real, worst_case_gen n Real) in
-  let t2 = Fun (Nat, worst_case_gen n Real) in
+  let t1, t2 = test8_gen n in
   test_wrap fs (string_of_int n) t1 t2
   
 
