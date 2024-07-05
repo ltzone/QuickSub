@@ -2,7 +2,7 @@ open Defs;;
 
 exception Timeout
 
-let max_time = 10.
+let max_time = 100.
 
 let test_wrap ?(print=false) (fs: (typ -> typ -> bool) list) n t1 t2  =
 (if print then
@@ -96,13 +96,13 @@ let test3_gen (n:int) =
 let test4_gen (n:int) =
     deep_subtyp_pos_mul_gen n Nat Real
 
-let test5_gen (n:int) =
+let test7_gen (n:int) =
     deep_subtyp_pos_mul_gen n Real Nat
 
-let test6_gen (n:int) =
+let test5_gen (n:int) =
     deep_subtyp_pos_mul_gen n Real Real
 
-let test7_gen (n:int) =
+let test6_gen (n:int) =
     composite_gen 10 (n / 10) Real Nat
 
 let test8_gen (n:int) =
