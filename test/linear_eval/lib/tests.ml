@@ -2,7 +2,7 @@ open Defs;;
 
 exception Timeout
 
-let max_time = 120.
+let max_time = 20.
 
 let test_wrap ?(print=false) (fs: (typ -> typ -> bool) list) n t1 t2  =
 (if print then
@@ -23,8 +23,8 @@ let test_wrap ?(print=false) (fs: (typ -> typ -> bool) list) n t1 t2  =
       Gc.delete_alarm alarm;
       let endt = Unix.gettimeofday () in
       if timeout_flag then
-        (* Printf.printf "N/A   \tTimeout   \t" *)
-        Printf.printf "%B\t%f\t" res (endt -. start)
+        Printf.printf "N/A   \tTimeout   \t"
+        (* Printf.printf "%B\t%f\t" res (endt -. start) *)
       else
         Printf.printf "%B\t%f\t" res (endt -. start)
   ) fs;
@@ -131,6 +131,11 @@ let test7 fs (n:int) =
   test_wrap fs (string_of_int n) t1 t2
 
 
+let test8 fs (n:int) = 
+  let t1 = Fun (Real, worst_case_gen n Real) in
+  let t2 = Fun (Nat, worst_case_gen n Real) in
+  test_wrap fs (string_of_int n) t1 t2
+  
 
 let test_rcd fs (n:int) = 
   (* Real ->a , a -> Real <:  Real -> a, a -> Real *)

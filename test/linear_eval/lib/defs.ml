@@ -122,6 +122,14 @@ let typ_pair_gen (depth: int) =
     let ts' = typgen depth in
     rev_concat_map (fun t -> List.rev_map (fun t' -> (t, t')) ts') ts
 
+let worst_case_gen (depth: int) b = 
+  let rec typ_genh max_var dep = 
+    if dep = 0 then b else
+      Rec (max_var, List.fold_left (fun acc v -> Fun (Var v, acc))
+        (typ_genh (max_var + 1) (dep - 1))
+        (range 0 max_var)) in
+  typ_genh 0 depth
+
 (* generate [mu a. a -> mu b. b -> ... b1 <: mu a. a -> mu b. b -> ... b2]  *)
 let deep_subtyp_gen (depth: int) b1 b2 = 
   let rec typ_genh max_var dep base = 

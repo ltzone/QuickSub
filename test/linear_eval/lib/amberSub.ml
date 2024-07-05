@@ -83,7 +83,9 @@ let rec subh (i: int) (e:env) (x:typ) (y:typ) : bool =
       let res2 = subh i e a2 b2 in
       res1 && res2
   | (Var i, Var j) -> List.mem (i, j) e
-  | (Rec (j, a), Rec (k, b)) when j = k  && equiv_type a b -> wf_type e (Rec (j, a)) i
+  | (Rec (j, a), Rec (k, b)) when j = k  && equiv_type a b -> 
+      (* wf_type e (Rec (j, a)) i *)
+      true
   | (Rec (j, a), Rec (k, b)) when j = k ->
       let j' = i + 1 in
       let k' = i + 2 in
