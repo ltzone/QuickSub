@@ -109,7 +109,7 @@ let test_table2 () =
   let fnames = " Depth\tWidth\tLinear\tLinearTime\tEqui\tEquiTime\tAmber\tAmberTime\tComplete\tCompleteTime" in
   let fs = [
     LinearSubOpt.sub; 
-    EquiSub.sub; 
+    (* EquiSub.sub;  *)
     AmberSub.sub; 
     CompleteSub.sub] in
   let configs = [
@@ -118,10 +118,10 @@ let test_table2 () =
   in
   test_group fnames fs configs
   [
-    ("rcd test2', disprove positive subtyping with a slight modification", RcdTest.test2');
-    ("rcd test3, disprove negative subtyping", RcdTest.test3);
-    ("rcd test2, prove positive subtyping", RcdTest.test2);
-    ("rcd test1, prove negative + top", RcdTest.test1)
+    ("rcd test2', disprove positive subtyping with a slight modification", RcdTest.paper_test1);
+    ("rcd test3, disprove negative subtyping", RcdTest.paper_test2); 
+    ("rcd test2, prove positive subtyping", RcdTest.paper_test3); 
+    ("rcd test1, prove negative + top", RcdTest.paper_test4)
   ]
 
 
@@ -203,75 +203,9 @@ let playground () =
     ]
 
 
-  (* Test records in depth and width *)
-  (* let fnames = "Configurations\tLinear\tLinear time\tLinOpt\tLinOpt time\tEqui\tEqui time\tAmber\tAmber time\tComplete\tComplete time" in *)
-
-
-
-
-(* Test nominal correctness *)
-
-(* let main = 
-  let tys = Defs.typ_pair_gen 2 in
-  (* print_endline (string_of_int (List.length tys)); *)
-  List.iteri (
-    fun _ (t1, t2) -> 
-      (* (if i mod 100000 = 0 then 
-        (* print_endline (string_of_int i); *)
-        (* (print_string (Defs.string_of_typ t1);
-        print_string " <: ";
-        print_endline (Defs.string_of_typ t2)) *) ()
-      else ()); *)
-      let res1 = LinearSub.sub t1 t2 in
-      let res2 = try NominalSub.sub t1 t2  with
-      | Failure e -> print_string (Defs.string_of_typ t1);
-        print_string " <: ";
-        print_endline (Defs.string_of_typ t2);
-        raise (Failure e  )
-      in
-      if res1 <> res2 then
-        (
-        (* print_endline (string_of_int (Defs.numVars t1)); print_endline (string_of_bool (AmberSub.eq_type_lift true (Defs.numVars t1) t1 (AmberSub.lift_vars (Defs.numVars t1) t2))); *)
-        (* print_endline (Defs.string_of_typ ((AmberSub.lift_vars (Defs.numVars t1) t2))); *)
-        Printf.printf "Error: %s <: %s, \t Amber:%s \t Linear:%s\n" (Defs.string_of_typ t1) (Defs.string_of_typ t2) (string_of_bool res1) (string_of_bool res2))
-  ) tys
- *)
-
-
-
-(* Test equi correctness *)
-
-(* let main = 
-  let tys = Defs.typ_pair_gen 2 in
-  (* print_endline (string_of_int (List.length tys)); *)
-  List.iteri (
-    fun _ (t1, t2) -> 
-      (* (if i mod 100000 = 0 then 
-        (* print_endline (string_of_int i); *)
-        (* (print_string (Defs.string_of_typ t1);
-        print_string " <: ";
-        print_endline (Defs.string_of_typ t2)) *) ()
-      else ()); *)
-      let res1 = LinearSub.sub t1 t2 in
-      let res2 = try EquiSub.sub t1 t2  with
-      | Failure e -> print_string (Defs.string_of_typ t1);
-        print_string " <: ";
-        print_endline (Defs.string_of_typ t2);
-        raise (Failure e  )
-      in
-      if res1 == true && res2 == false then
-        (* if res1 <> res2 then *)
-        (
-        (* print_endline (string_of_int (Defs.numVars t1)); print_endline (string_of_bool (AmberSub.eq_type_lift true (Defs.numVars t1) t1 (AmberSub.lift_vars (Defs.numVars t1) t2))); *)
-        (* print_endline (Defs.string_of_typ ((AmberSub.lift_vars (Defs.numVars t1) t2))); *)
-        Printf.printf "Error: %s <: %s, \t Amber:%s \t Equi:%s\n" (Defs.string_of_typ t1) (Defs.string_of_typ t2) (string_of_bool res1) (string_of_bool res2))
-  ) tys *)
-
-
-
 let main = 
     (* test_table1 () *)
     (* collect_smax () *)
     (* test_plot1 () *)
-    (* test_table2 (); *)
-    test_plot2 ()
+    test_table2 ();
+    (* test_plot2 () *)

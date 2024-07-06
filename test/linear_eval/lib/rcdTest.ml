@@ -191,6 +191,27 @@ let test1 fs config =
   Tests.test_wrap fs (Printf.sprintf "%4d\t%4d" d w) t1 t2
   
 
+let paper_test3 fs config =
+  (* 
+  base type + covariant type
+  *)
+  let (d, w) = config in
+  let t1 = rcd_typ_gen2 d w Real Nat in
+  let t2 = rcd_typ_gen2 d w Nat Real in
+  Tests.test_wrap fs (Printf.sprintf "%4d\t%4d" d w) t1 t2
+
+let paper_test4 fs config =
+  (* 
+  base type + contravariant type + top type
+  *)
+  let (d, w) = config in
+  let t1 = rcd_typ_gen1_top d w Nat Nat in
+  let t2 = rcd_typ_gen1 d w Real Real in
+  Tests.test_wrap fs (Printf.sprintf "%4d\t%4d" d w) t1 t2
+
+
+
+
 let test2 fs config = 
   (* 
   base type + covariant type
@@ -220,7 +241,7 @@ let test2 fs config =
 
 
 
-let test2' fs config = 
+let paper_test1 fs config = 
     (* 
     base type + covariant type + small change
     mu b. {
@@ -243,8 +264,8 @@ let test2' fs config =
     }
     *)
     let (d, w) = config in
-    let t1 = rcd_typ_gen2' d w Real Nat Real in
-    let t2 = rcd_typ_gen2' d w Real Real Nat in
+    let t1 = rcd_typ_gen2 d w Real Real  in
+    let t2 = rcd_typ_gen2 d w Real Nat in
     Tests.test_wrap fs (Printf.sprintf "%4d\t%4d" d w) t1 t2
   
   
@@ -252,7 +273,7 @@ let test2' fs config =
 
 
 
-let test3 fs config = 
+let paper_test2 fs config = 
   (* disprove: contravariant type
   *)
   let (d, w) = config in
