@@ -109,9 +109,10 @@ let test_table2 () =
   let fnames = " Depth\tWidth\tLinear\tLinearTime\tEqui\tEquiTime\tAmber\tAmberTime\tComplete\tCompleteTime" in
   let fs = [
     LinearSubOpt.sub; 
-    (* EquiSub.sub;  *)
+    EquiSub.sub; 
     AmberSub.sub; 
-    CompleteSub.sub] in
+    CompleteSub.sub
+    ] in
   let configs = [
   (100, 1000);
   ]
@@ -152,7 +153,7 @@ let test_plot2 () =
   in
   test_group fnames fs configs
   [
-    ("rcd test2, prove positive subtyping", RcdTest.test2);
+    ("rcd test2, prove positive subtyping", RcdTest.paper_test3);
   ]
 
 
@@ -207,5 +208,5 @@ let main =
     (* test_table1 () *)
     (* collect_smax () *)
     (* test_plot1 () *)
-    test_table2 ();
-    (* test_plot2 () *)
+    (* test_table2 (); *)
+    test_plot2 ()
