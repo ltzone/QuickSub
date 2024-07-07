@@ -216,7 +216,7 @@ Inductive type : typ -> Prop :=
   | type_mu : forall L T,
       (forall X, X \notin L -> type (open_tt T (typ_fvar X))) ->
       type (typ_mu T)
-  | type_rcd: forall l,
+  | type_rcd: forall l (Huniq: uniq l),
       (forall i T, binds i T l -> type T) ->
       type (typ_rcd l)
 .

@@ -131,6 +131,7 @@ Proof with auto.
   +
     induction l...
     destruct a.  simpl. rewrite <- IHl...
+    2:{ inversion Huniq... }
     2:{ intros. apply H with (i:=i)... }
     2:{ intros. apply H0 with (i:=i)... }
     f_equal. f_equal.

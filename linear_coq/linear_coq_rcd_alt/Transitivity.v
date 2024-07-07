@@ -1135,6 +1135,7 @@ Proof with auto.
     destruct H3 as (cm1' & cm2' & evs1' & evs2' & Hsub1 & Hsub2 & Hcomp & Hevs').
     destruct IHSub2 with (l:=tys1 ++ tys1') (evs1 := evs2') (cm1 := cm2')
       (A:= typ_rcd (tys0' ++ tys0)) as ( evsg1 & G1a & G1b) ...
+    { apply uniq_remove_mid with (F:=l0~T1)... }
     { intros. apply H with (i:=i) (T:=T)... analyze_binds H3.  }
     { intros. apply H0 with (i:=i) (T:=T)... analyze_binds H3.  }
     { get_well_form... }

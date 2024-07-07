@@ -17,22 +17,22 @@ let test_group fnames (fs:(Defs.typ -> Defs.typ -> bool) list) n =
 let test_table1 () =
   let fnames = "No.\tLinOpt\tLinOptTime\tNominal\tNominalTime\tEqui\tEquiTime\tAmber\tAmberTime\tComplete\tCompleteTime" in
   let fs = [
-    LinearSubExt.sub; 
-    (* NominalSub2.sub;  *)
-    (* EquiSub.sub;  *)
-    (* AmberSub.sub;  *)
-    (* CompleteSub.sub *)
+    (* LinearSubExt.sub; 
+    NominalSub2.sub;  *)
+    EquiSub.sub; 
+    (* AmberSub.sub; 
+    CompleteSub.sub *)
   ] in 
   let depth = 5000 in
   let tests = [
-    (* ("1", Tests.test1_gen, depth);
-    ("2", Tests.test2_gen, depth);
-    ("3", Tests.test3_gen, depth);
-    ("4", Tests.test4_gen, depth);
-    ("5", Tests.test5_gen, depth);
+    (* ("1", Tests.test1_gen, depth); *)
+    (* ("2", Tests.test2_gen, depth); *)
+    (* ("3", Tests.test3_gen, depth); *)
+     ("4", Tests.test4_gen, depth);
+    (* ("5", Tests.test5_gen, depth);
     ("6", Tests.test6_gen, depth);
-    ("7", Tests.test7_gen, depth); *)
-    ("8", Tests.test8_gen, 500);
+    ("7", Tests.test7_gen, depth); 
+     ("8", Tests.test8_gen, 500);*)
   ] in
   Printf.printf "depth = %d\n" depth;
   print_endline fnames;
@@ -205,8 +205,8 @@ let playground () =
 
 
 let main = 
-    (* test_table1 () *)
+    test_table1 ()
     (* collect_smax () *)
     (* test_plot1 () *)
     (* test_table2 (); *)
-    test_plot2 ()
+    (* test_plot2 () *)

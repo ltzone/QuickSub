@@ -258,9 +258,32 @@ Proof with auto.
     apply H0 with (X1:=X) (T0:=T)...
     constructor...
   -
+    apply Sa_rcd_lt...
+    intros. apply H2 in H4.
+    apply wf_typ_strengthening in H4...
+  -
+    apply Sa_rcd_cons with (cm1:=cm1) (cm2:=cm2)...
+    + apply IHSub1 with (X0:=X) (T0:=T)...
+    + apply IHSub2 with (X0:=X) (T0:=T)...
+  -
     rewrite <- H0.
     apply IHSub with (X0:=X) (T0:=T)...
 Qed.
+
+Lemma binds_subst_ee_ex: forall i ei x u es,
+  binds i ei (map (subst_ee x u) es) ->
+  exists e, ei = subst_ee x u e /\ binds i e es.
+Proof with auto.
+  intros.
+  induction es...
+  - inversion H.
+  - destruct a. simpl in H.
+    analyze_binds H...
+    + exists e...
+    + destruct IHes as [? [? ?]]...
+      exists x0...
+Qed.
+
 
 Lemma typing_through_subst_ee : forall F U E x T e u,
   typing (F ++ x ~ bind_typ U ++ E) e T ->
@@ -301,6 +324,14 @@ Proof with eauto.
     apply typing_fold...
     rewrite_alist (WFS (F ++ (x ~ bind_typ U) ++ E) (typ_mu A)) in H1.
     apply wf_typ_strengthening in H1...
+  -
+    apply typing_rcd_cons...
+    + apply wf_env_strengthening in H...
+    + rewrite dom_map...
+    + intros.
+      destruct (binds_subst_ee_ex _ _ _ _ _ H7)
+        as [ei' [? ?]].
+      subst. apply H5 with (i:=i)...
   -
     apply typing_sub with (S:=S) (evs:=evs) (cm:=cm)...
     rewrite_alist (F ++ (x ~ bind_typ U) ++ E) in H1.
@@ -353,11 +384,14 @@ Proof with auto.
     { pose proof H1. exists A, Lt, evs...
       split...
       apply sub_lt_then_emp in H2... rewrite H2. apply unfolding_lemma with (evs:=evs)... }
-    { pose proof H1. apply Msub_eq_sem in H2.
-      inversion H2;subst. destruct (Msub_refl nil Pos (open_tt U (typ_mu U)))... 
-      { apply typing_regular in H. destruct_hypos. get_type... }
-      { apply typing_regular in H. destruct_hypos... }
-      exists U, Eq, x...
+    { pose proof H1. apply Msub_refl_inv in H2.
+      inversion H2;subst. 
+      apply Msub_refl_equiv with (E:=empty) (im:=Pos) in H2...
+      2:{ apply sub_regular in H1. destruct_hypos... }
+      destruct H2 as [evs' ?].
+      apply unfolding_lemma_eq in H2.
+      destruct H2 as [evs'' ?].
+      exists A, Eq, evs''...
     }
   -
     specialize (IHtyping T v).
@@ -368,23 +402,37 @@ Proof with auto.
     apply IHtyping with (U:=U) (cm:=(seq_cm cm cm0)) (evs:=x) in H2...
 Qed.
 
+Lemma typing_inv_rcd: forall S vs,
+  typing nil (exp_rcd vs) S ->
+  forall U cm evs, Sub Pos cm evs nil S (typ_rcd U) ->
+  (forall i ei ti, binds i ei vs -> binds i ti U -> typing nil ei ti).
+Proof with auto.
+  intros.
+  generalize dependent U.
+  generalize dependent i.
+  generalize dependent ei.
+  generalize dependent ti.
+  dependent induction H;intros...
+  - pose proof sub_typ_label_incl  H6.
+    pose proof binds_In _ _ _ _ H7.
+    rewrite H8 in H9.
+    apply binds_In_inv in H9.
+    destruct H9 as [ti' ?].
+    destruct (binds_split _ _ _ _ H9) as [tys1 [tys2 ?]].
+    destruct (binds_split _ _ _ _ H7) as [us1 [us2 ?]].
+    subst.
+    apply Sub_rcd_inversion_complete in H6.
+    destruct H6 as (cm1' & cm2' & evs1 & evs2 & ? & ? & ? & ? ).
+    apply typing_sub with (S:=ti') (evs:=evs1) (cm:=cm1')...
+    apply H3 with (i0:=i)...
+  - specialize (IHtyping vs).
+    assert (type T). { get_type... }
+    pose proof trans_aux2 _ H4 _ _ _ _ _ _ _ _ H0 H2.
+    destruct_hypos...
+    apply IHtyping with (ti:=ti) (ei:=ei) (i:=i) in H6 ...
+Qed.
 
 
-(* Lemma preservation : forall E e e' T,
-    typing E e T ->
-    step e e' ->
-    typing E e' T.
-    
-    cannot use E, because we get a Neg in the inversion lemma for abs,
-    we need to flip the polarity of the subtyping relation.
-    and it only holds if we have a positive subtyping relation.
-
-
-
-    or Pos/Neg does not matter?
-    
-    
-    *)
 
 Definition flip_bind (b:binding) : binding :=
   match b with
@@ -447,8 +495,44 @@ Proof with auto using flip_bind_wf_env, flip_bind_WFS.
   -
     apply Sa_rec_eq_in with (L:=L) (im:=flip_im im)...
   -
+    apply Sa_rcd_lt...
+    admit.
+  -
+    apply Sa_rcd_cons with (cm1:=cm1) (cm2:=cm2)...
+  -
     rewrite <- H0...
+(* Qed. *)
+Admitted.
+
+
+Lemma tlookup_sem: forall i T Ti, tlookup i T = Some Ti -> binds i Ti T.
+Proof with auto.
+  intros.
+  generalize dependent i.
+  induction T;intros;simpl in *...
+  -
+    inversion H...
+  -
+    destruct a. destruct (a == i);subst...
+    inversion H;subst...
 Qed.
+
+Lemma Tlookup_sem_inv: forall i T Ti, 
+  uniq T ->
+  binds i Ti T -> Tlookup i T = Some Ti.
+Proof with auto.
+  intros.
+  generalize dependent i.
+  induction T;intros;simpl in *...
+  -
+    inversion H0...
+  -
+    destruct a. analyze_binds_uniq H0.
+    +  rewrite eq_dec_refl...
+    + simpl in H1. destruct (a == i). { subst. fsetdec. }
+      apply IHT... inversion H...
+Qed.
+
 
 
 Lemma preservation : forall e e' T,
@@ -494,6 +578,35 @@ Proof with auto.
     destruct H as [T' [cm' [evs' ?]]]. destruct_hypos.
     apply typing_sub with (S:=open_tt T' (typ_mu T')) (evs:=evs') (cm:=cm')...
   -
+    apply Tlookup_sem in H0.
+    dependent destruction H1...
+    +
+      pose proof Msub_refl empty Pos (typ_rcd T).
+      destruct H3 as [evs' ?]...
+      { apply typing_regular in H. destruct_hypos.
+        get_type... }
+      { apply typing_regular in H. destruct_hypos... }
+      pose proof typing_inv_rcd _ _ H T _ _ H3.
+      apply tlookup_sem in H2.
+      apply H4 with (i:=i)...
+    +
+      apply typing_proj with (T:=T)...
+      apply Tlookup_sem_inv... 
+      { apply typing_regular in H. destruct_hypos. inversion H3... }
+  -
+    inversion H5;subst.
+    apply typing_rcd_cons...
+    + apply uniq_insert_mid...
+      { apply uniq_remove_mid with (F:=l~e1)... }
+      { apply fresh_mid_head in H0... }
+      { apply fresh_mid_tail in H0... }
+    + rewrite !dom_app in *. simpl in *. fsetdec.
+    + intros.
+      analyze_binds H9.
+      * apply H3 with (i:=i)...
+      * apply H4 with (i:=l) (ei:=e1)...
+      * apply H3 with (i:=i)...
+  -
     apply typing_sub with (S:=S) (cm:=cm) (evs:=evs)...
 Qed.
 
@@ -511,7 +624,25 @@ Proof.
   dependent induction H; subst; eauto.
 Qed.
 
-    
+Lemma canonical_form_rcd: forall e T,
+  value e ->
+  typing empty e (typ_rcd T) ->
+  exists vs, e = exp_rcd vs /\ dom T [<=] dom vs /\
+      forall i ei, binds i ei vs -> value ei.
+Proof with auto.
+  intros e T Val Typ.
+  dependent induction Typ;try solve [inversion Val]...
+  + inversion Val;subst...
+    exists es. repeat split... 
+    { rewrite H2. reflexivity. }
+  + 
+    pose proof sub_rcd_canonical _ _ _ _ _ _ H.
+    destruct_hypos.
+    subst.
+    destruct (IHTyp x)... destruct_hypos.
+    exists x0. repeat split...
+    apply sub_typ_label_incl in H. fsetdec.
+Qed.
     
 Lemma canonical_form_fold : forall e U,
   value e ->
@@ -559,6 +690,28 @@ Proof with auto.
       destruct_hypos. exists x3, (seq_cm x2 Eq)...
     + apply IHSub with (L:=L) (im:=im) ...
 Qed.
+
+Lemma tlookup_sem_inv: forall i T Ti, 
+  uniq T ->
+  binds i Ti T -> tlookup i T = Some Ti.
+Proof with auto.
+  intros.
+  induction T.
+  - inversion H0.
+  - destruct a. analyze_binds_uniq H0.
+    + simpl. rewrite eq_dec_refl...
+    + simpl. simpl in H1. destruct (a == i)... { fsetdec. }
+      apply IHT... inversion H...
+Qed.
+
+Lemma typing_rcd_uniq: forall E e T,
+    typing E (exp_rcd e) T ->
+    uniq e.
+Proof with auto.
+  intros.
+  dependent induction H...
+Qed.
+
 
 Lemma progress : forall e T,
   typing empty e T ->
@@ -647,4 +800,34 @@ Proof with eauto.
       apply typing_regular in H...
       apply wfs_type with (E:=empty)...
       apply H.
-Qed.
+  -
+    destruct IHtyping...
+    +
+      pose proof canonical_form_rcd _ _ H1 H.
+      destruct H2 as [vs [? [? ?]]].
+      subst.
+      destruct (Msub_refl empty Pos (typ_rcd T)) as [evs ?]...
+      { apply typing_regular in H. destruct_hypos... get_type... }
+      { apply typing_regular in H. destruct_hypos... }
+      pose proof typing_inv_rcd _ _ H T _ _ H2.
+      apply Tlookup_sem in H0.
+      apply binds_In in H0. rewrite H3 in H0.
+      apply binds_In_inv in H0. destruct H0.
+      right. exists x. constructor...
+      apply tlookup_sem_inv...
+      { apply typing_rcd_uniq in H... }
+    +
+      right.
+      destruct H1.
+      exists (exp_rcd_proj x i).
+      apply step_proj...
+  -
+    generalize dependent tys.
+    induction es;intros.
+    + left. constructor... intros. inversion H5.
+    + admit.
+(*   
+
+
+Qed. *)
+Admitted.

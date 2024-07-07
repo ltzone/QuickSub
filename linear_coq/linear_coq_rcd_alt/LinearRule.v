@@ -100,8 +100,14 @@ Proof with auto.
     2:{ apply H2... intros C. subst. exfalso... }
     destruct H0...
     { subst. exfalso... }
-  + admit.
-Admitted.
+  + clear H0. induction T.
+    - simpl. fsetdec.
+    - simpl. apply KeySetProperties.union_subset_3.
+      * destruct a. simpl. apply H1 with (i:=a)...
+      * apply IHT... { inversion H;subst... }
+        intros. apply H1 with (i:=i)...
+        right...
+Qed.
 
 
 
@@ -486,6 +492,7 @@ Proof with auto.
     + exists emp...
     + inversion H2;subst.
       destruct IHl as [evs1 ?]...
+      { inversion H4;subst... }
       { intros. apply H with (i:=i)... right... }
       { intros. apply H0 with (i:=i)... right... }
       { inversion H4;subst. apply WFS_rcd... intros. apply H6 with (i:=i)... }
@@ -866,21 +873,28 @@ Proof with auto.
         apply binds_In in H6. rewrite H8 in H6.
         apply binds_In_inv in H6. destruct_hypos.
         apply binds_split in H6. destruct H6 as (l2a & l2b & ?). subst.
+        assert (Hdom: dom l1 [=] dom (l2b ++ l2a)).
+        { apply dom_add_drop with (a0:=a) (t1:=t) (t2:=x)...
+          { inversion H;subst... }
+          { inversion H0;subst...
+            apply uniq_reorder_2... }
+          rewrite !dom_app in *.
+          simpl in H8. fsetdec.
+        } 
         destruct IHl1 with (l2:=l2b++l2a)...
-        { inversion H;subst. apply type_rcd. intros. apply H7 with (i:=i)... }
-        { inversion H0;subst. apply type_rcd. intros. apply H7 with (i:=i)... analyze_binds H6... }
+        { inversion H;subst. apply type_rcd...
+          { inversion Huniq... }
+          intros. apply H7 with (i:=i)... }
+        { inversion H0;subst. apply type_rcd.
+          { apply uniq_remove_mid with (F:=a~x)... }
+          intros. apply H7 with (i:=i)... analyze_binds H6... }
         { intros. apply H1 with (l:=l)... }
         { intros. apply H2 with (l:=l)... }
         { inversion H5;subst. apply eqv_rcd...
-          { rewrite !dom_map. simpl in H10. rewrite !dom_map in H10.
-            apply dom_add_drop with (a0:=a) (t1:=t) (t2:=x)...
-            { admit. } { admit. }
-            admit.
-          }
+          { rewrite !dom_map. simpl in H10. rewrite !dom_map in H10... }
           { intros. apply H11 with (i:=i)...
             rewrite map_app in H7. rewrite map_app. simpl. analyze_binds H7. }
         }
-        { admit. }
         (* needs WFS to ensure uniq label *)
         { intros. apply H9 with (i:=i);simpl...
           rewrite map_app in *. simpl. analyze_binds H7... }
@@ -901,7 +915,8 @@ Proof with auto.
       intros. destruct (H2 i T1 T2) with (C:=C) (D:=D)...
       apply H9 with (i:=i)...
     }
-Admitted.
+Qed.
+
 
 
 
@@ -933,12 +948,12 @@ Proof with auto.
 
 
     apply tp_rcd...
-    { get_type... inversion H2;subst. apply type_rcd. intros.
+    { get_type... inversion H2;subst. apply type_rcd... intros.
       analyze_binds_uniq H6.
       + apply H7 with (i:=i)...
       + apply H7 with (i:=i)...
     }
-    { get_type... inversion H3;subst. apply type_rcd. intros.
+    { get_type... inversion H3;subst. apply type_rcd... intros.
       analyze_binds_uniq H6.
       + apply H7 with (i:=i)...
       + apply H7 with (i:=i)...

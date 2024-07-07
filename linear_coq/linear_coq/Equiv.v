@@ -71,6 +71,30 @@ Inductive sub_amber2: env -> typ -> typ -> Prop :=
 #[export]
 Hint Constructors sub_amber2 WFS wf_env : core.
 
+Lemma sub_amber2_regular: forall E A B,
+  sub_amber2 E A B -> wf_env E /\ WFS E A /\ WFS E B.
+Proof with auto.
+  intros.
+  induction H...
+  - destruct_hypos...
+  - repeat split...
+    + pick_fresh X. specialize_x_and_L X L.
+      destruct_hypos. inversion H0...
+    + apply WFS_rec with (L:=L)...
+      intros. apply H0...
+    + apply WFS_rec with (L:=L)...
+      intros. apply H0...
+Qed.
+
+Lemma WFS_type: forall E A,
+  WFS E A -> type A.
+Proof with auto.
+  intros.
+  induction H...
+  - apply type_mu with (L:=L)...
+Qed.
+
+
 Definition drop_im b :=
   match b with
   | Rules.bind_sub _ => bind_sub
@@ -187,6 +211,44 @@ Proof with eauto.
     rewrite <- (extend_env_dom _ _ H)...
 Qed.
 
+Lemma extend_env_binds:
+  forall E E' X b,
+    extend_env E E' ->
+    binds X b E ->
+    exists im, binds X (Rules.bind_sub im) E'.
+Proof with auto.
+  intros. generalize dependent X.
+  generalize dependent b.
+  induction H;intros...
+  - inversion H0.
+  - analyze_binds H0.
+    + exists im...
+    + apply IHextend_env in BindsTac.
+      destruct BindsTac...
+      exists x...
+Qed.
+    
+
+Lemma WFS_extend: forall E E' A,
+  WFS E A -> extend_env E E' ->
+  Rules.WFS E' A.
+Proof with auto.
+  intros. generalize dependent E'.
+  induction H;intros...
+  - apply extend_env_binds with (E':=E') in H;try eassumption.
+    destruct H. eauto.
+  - apply Rules.WFS_rec with (L:=L) (im:=Pos)...
+Qed.
+
+Lemma uniq_from_wf_env: forall E,
+  wf_env E -> uniq E.
+Proof with auto.
+  intros.
+  induction H...
+Qed.
+
+
+
 
 Theorem pos_esa_complete: forall E A B,
     sub_amber2 E A B ->
@@ -203,9 +265,12 @@ Proof with eauto using extend_wf_env.
     destruct (decide_typ A typ_top)...
     + subst...
     + exists Lt, emp...
-      admit.
+      apply Sa_top_lt...
+      apply WFS_extend with (E:=E)...
   -
-    admit.
+    apply extend_env_binds with (E':=E') in H...
+    destruct H as [im' ?].
+    destruct im, im'...
     (* apply well_bind_env_fvar_x in H1. *)
   -
     destruct IHsub_amber2_1 with (E':=E') (im:=flip_im im)
@@ -246,6 +311,7 @@ Proof with eauto using extend_wf_env.
       exfalso. apply H5.
       destruct im, im_x';simpl in *...
   -
+    assert (Hasub: sub_amber2 E (typ_mu A) (typ_mu B))...
     pick_fresh X. specialize_x_and_L X L.
     inversion H1;subst.
     +
@@ -255,7 +321,11 @@ Proof with eauto using extend_wf_env.
       { hnf. intros.
         analyze_binds_uniq H4. 
         { simpl. constructor...
-          admit. }
+          apply Variance.uniq_from_wf_env.
+          apply extend_wf_env with (E:=E)...
+          apply sub_amber2_regular in H.
+          destruct_hypos. inversion H;subst...
+        }
         + inversion BindsTacVal;subst.
           rewrite xor_prop_refl.
           pick_fresh Z. specialize_x_and_L Z (L0 \u {{X}}).
@@ -270,16 +340,22 @@ Proof with eauto using extend_wf_env.
             apply pos_rename_fix...
           * pick_fresh Z. specialize_x_and_L Z (L1 \u {{X0}}).
             apply posvar_self_notin...
-            { admit. }
+            { apply sub_amber2_regular in H. destruct_hypos.
+              apply WFS_type with (E:=(X ~ bind_sub ++ E))...
+            }
             { solve_notin. }
       }
       destruct cm'.
       * exists Lt, evs'.
-        apply Sa_rec_lt with (L:=L \u {{X}} \u fv_tt A \u fv_tt B).
+        apply Sa_rec_lt with (L:=L \u {{X}} \u fv_tt A \u fv_tt B\u dom E).
         intros.
         rewrite_alist (nil ++ (X ~ Rules.bind_sub im ++ E')) in Hsub.
         apply sub_replacing with (Y:=X0) in Hsub...
-        2:{ admit. }
+        2:{ eapply extend_wf_env with (E:=X0~bind_sub++E)...
+            { simpl. constructor... }
+            apply sub_amber2_regular in H. destruct_hypos...
+            inversion H;subst. constructor...
+        }
         rewrite <- subst_tt_intro in Hsub...
         rewrite <- subst_tt_intro in Hsub...
         destruct (AtomSetImpl.mem X evs') eqn:Emem...
@@ -298,11 +374,18 @@ Proof with eauto using extend_wf_env.
         exists Eq.
         apply Msub_eq_sem in Hsub.
         apply open_tt_fresh_eq_inv in Hsub...
-        subst. apply Msub_refl.
-        admit. admit. admit.
+        subst. 
+        apply sub_amber2_regular in Hasub. destruct_hypos.
+        apply Msub_refl...
+        { apply posvar_regular in H1. destruct_hypos... }
+        { apply WFS_extend with (E:=E)... }
+        
     +
       (* self *)
       exists Eq.
+      apply sub_amber2_regular in Hasub. destruct_hypos.
       apply Msub_refl.
-      admit. admit. admit.
-Admitted.
+      { apply extend_wf_env with (E:=E)... }
+      { apply posvar_regular in H1. destruct_hypos... }
+      { apply WFS_extend with (E:=E)... }
+Qed.
