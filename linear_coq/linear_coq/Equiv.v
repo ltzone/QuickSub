@@ -389,3 +389,13 @@ Proof with eauto using extend_wf_env.
       { apply posvar_regular in H1. destruct_hypos... }
       { apply WFS_extend with (E:=E)... }
 Qed.
+
+
+Theorem pos_esa_complete_final: forall A B,
+    sub_amber2 nil A B ->
+    exists cm evs, Sub Pos cm evs nil A B.
+Proof with eauto.
+  intros.
+  apply pos_esa_complete with (E:=nil) (im:=Pos) (E':=nil) in H...
+  { hnf. intros. inversion H0. }
+Qed.
