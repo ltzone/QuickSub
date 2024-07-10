@@ -157,7 +157,7 @@ module MakeTests (P : PARAM) = struct
   let test_table1 () =
     let fnames = "No.\tLinOpt\tLinOptTime\tNominal\tNominalTime\tEqui\tEquiTime\tAmber\tAmberTime\tComplete\tCompleteTime" in
     let fs = [
-      LinearSubExt.sub; 
+      LinearSubOpt.sub; 
       NominalSub2.sub; 
       EquiSub.sub; 
       AmberSub.sub; 
@@ -214,10 +214,11 @@ module MakeTests (P : PARAM) = struct
     let step_depth = !depth1 / 5 in
     let depths = List.init 5 (fun i -> (i + 1) * step_depth) in
     let tests = [
-      (* ("1", TestGen.test1_gen, depths, fnames_all);
-      ("3", TestGen.test3_gen, depths, fnames_all); *)
-      ("4", TestGen.test4_gen, depths, fnames_all);
-      ("7", TestGen.test7_gen, depths, fnames_all);
+      (* ("1", TestGen.test1_gen, depths, fnames_wo_nominal_equi); *)
+      ("3", TestGen.test3_gen, depths, fnames_wo_nominal_equi);
+      ("4", TestGen.test4_gen, depths, fnames_wo_nominal_equi);
+      ("6", TestGen.test6_gen, depths, fnames_wo_nominal_equi);
+      ("7", TestGen.test7_gen, depths, fnames_wo_nominal_equi);
     ] in
     List.iter (fun (testname, testcase, depths, (fnames, fs)) ->
       Printf.printf "------- Test %s ------\n" testname;

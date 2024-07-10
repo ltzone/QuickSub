@@ -25,29 +25,33 @@ let t2 = typ_genh 0 depth b2 in
 
 (* generate b1 -> mu a. b1 -> mu b. b1 -> ... -> a <: b2 -> mu a. b2 -> mu b. b2 -> ... -> a *)
 let deep_subtyp_pos_gen (depth: int) b1 b2 =
-let rec typ_genh max_var dep base = 
+let rec typ_genh max_var dep fbase base = 
   if dep = 0 then Fun (base, Var 0) else
-    Fun (base, Rec (max_var, Fun (base, typ_genh (max_var + 1) (dep - 1) base))) in
-let t1 = typ_genh 0 depth b1 in
-let t2 = typ_genh 0 depth b2 in
+    Fun (fbase, Rec (max_var, Fun (fbase, typ_genh (max_var + 1) (dep - 1) fbase base))) in
+let t1 = typ_genh 0 depth Real b1 in
+let t2 = typ_genh 0 depth Nat b2 in
 (t1, t2)
 
 let deep_subtyp_pos_mul_gen (depth: int) b1 b2 =
 let rec typ_genh max_var dep base cont = 
   if dep = 0 then cont else
     Rec (max_var, Fun (base, typ_genh (max_var + 1) (dep - 1) base (Sum (Var max_var, cont)))) in
-let t1 = typ_genh 0 depth b1 Nat in
-let t2 = typ_genh 0 depth b2 Nat in
+let t1 = typ_genh 0 depth Nat b2 in
+let t2 = typ_genh 0 depth Nat b1 in
 (t1, t2)
 
+let mk_refl f n a _ = f n a a
 
 let rec composite_gen (width: int) (depth: int) b1 b2 =
-let gen_funcs = [ deep_subtyp_gen; deep_subtyp_pos_gen; deep_subtyp_pos_mul_gen ] in
+let gen_funcs = [ mk_refl deep_subtyp_gen ; deep_subtyp_pos_gen; deep_subtyp_pos_mul_gen ] in
 let gen_func1 = List.nth gen_funcs (Random.int (List.length gen_funcs)) in
 if width = 0 then gen_func1 depth b1 b2 else
 let (t1, t2) = gen_func1 depth b1 b2 in
 let (t3, t4) = composite_gen (width - 1) depth b1 b2 in
 (Prod (t1, t3), Prod (t2, t4))
+
+
+
 
 let rec make_str_label (i: int) =
 let remainder = i mod 26 in
@@ -351,7 +355,8 @@ let test5_gen (n:int) =
     deep_subtyp_pos_mul_gen n Real Real
 
 let test6_gen (n:int) =
-    composite_gen 10 (n / 10) Real Nat
+    let ta, tb = composite_gen 10 (n / 10) Real Nat in
+    (lev_typ ta, lev_typ tb)
 
 let test8_gen (n:int) =
     let t1 = Fun (Real, worst_case_gen n Real) in

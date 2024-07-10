@@ -63,8 +63,8 @@ let collect_smax_cmd =
 let test_plot1_cmd =
   let doc = "Run test_plot1" in
   let info = Cmd.info "plot1" ~doc in
-  let term = Term.(const TestSuite.test_plot1 $ const ()) in
   (* let term = Term.(const TestSuite.test_plot1 $ const ()) in *)
+  let term = Term.(const (fun _ -> TestSuite.test_plot1 ()) $ set_params) in
   Cmd.v info term
 
 let test_table2_cmd =
