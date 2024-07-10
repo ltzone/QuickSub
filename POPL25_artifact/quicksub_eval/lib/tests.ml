@@ -250,7 +250,7 @@ module MakeTests (P : PARAM) = struct
 
 
 
-  let test_plot2 () =  
+  let test_table3 () =  
     let fnames = " Depth\tWidth\tLinear\tLinearTime\tEqui\tEquiTime\tAmber\tAmberTime\tComplete\tCompleteTime" in
     let fs = [
       LinearSubOpt.sub; 

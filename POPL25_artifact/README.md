@@ -98,3 +98,81 @@ For the system with records, the definitions and proofs can be found in a simila
 
 
 ## The OCaml Implementation
+
+We provide the OCaml implementation for QuickSub and other algorithms 
+being compared in the paper.
+
+We also prepare several recursive type pattern generators for testing the
+performance of the algorithms so that the experiments in Section 5 
+can be reproduced.
+
+
+### Structure of the artifact
+
+```
+./quicksub_eval
+├── bin
+│   ├── dune
+│   └── main.ml         # The main function (requires `Cmdliner` library for command line interface)
+|
+└── lib
+    ├── defs.ml         # Common definition of types and utility functions
+    |
+    ├── amberSub.ml     # The Amber Rules Implementation
+    ├── completeSub.ml  # The Ligatti's Complete Subtyping Implementation
+    ├── equiSub.ml      # The equi-recurive subtyping implementation
+    ├── linearSubExt.ml # The direct implementation QuickSub{} algorithm, which uses functional sets
+    ├── linearSubOpt.ml # The slightly optimized QuickSub{} algorithm, which uses imperative boolean arrays for equality variable sets
+    ├── nominalSub.ml   # The nominal subtyping implementation
+    ├── nominalSub2.ml  # The slightly optimized nominal subtyping implementation that avoids substitution on positive variables
+    |
+    ├── testGen.ml      # The recursive type pattern generators
+    └── tests.ml        # Scripts for testing
+```
+
+### Running the evaluation
+
+To run the implementation, first install `dune` and `cmdliner` via `OPAM`:
+```
+opam install dune cmdliner
+```
+
+Then, build the project:
+```
+dune build
+```
+
+All the algorithms and their performance can be tested by running the following command,
+which basically follows the evaluation setup in Section 5 of the paper:
+```
+# Table 1: Time (seconds) taken for benchmarks with depth 5000 for (1) to (7) and 500 for (8).
+dune exec quicksub_eval -- table1
+
+# Figure 8: Comparison of different works across multiple tests
+dune exec quicksub_eval -- plot1
+
+# Table 2. Runtime results (seconds) for subtyping record types (depth = 100, width = 1000).
+dune exec quicksub_eval -- table2
+
+# Table 3. Runtime results (seconds) for different algorithms with varying benchmark sizes in depth and width.
+dune exec quicksub_eval -- table3
+```
+
+For the commands above we set a default depth and timeout value to be smaller that what we used in the paper,
+so that the tests can be finished in a reasonable time, since some ill-performing algorithms may take too 
+long to finish. 
+
+The actual evaluation in Section 5 can be run by executing the artifact with the following command line options:
+```
+# Table 1: Time (seconds) taken for benchmarks with depth 5000 for (1) to (7) and 500 for (8).
+dune exec quicksub_eval -- table1 --depth1 5000 --max-time 100
+
+# Figure 8: Comparison of different works across multiple tests
+dune exec quicksub_eval -- plot1 --depth1 5000 --max-time 100
+
+# Table 2. Runtime results (seconds) for subtyping record types (depth = 100, width = 1000).
+dune exec quicksub_eval -- table2 --depth2 100 --width 1000 --max-time 100
+
+# Table 3. Runtime results (seconds) for different algorithms with varying benchmark sizes in depth and width.
+dune exec quicksub_eval -- table3 --max-time 100
+```
