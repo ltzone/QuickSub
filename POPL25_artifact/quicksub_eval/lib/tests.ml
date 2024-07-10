@@ -16,18 +16,18 @@ end
 
 let fnames_wo_nominal = 
   ("No.\tLinOpt\tLinOptTime\tEqui\tEquiTime\tAmber\tAmberTime\tComplete\tCompleteTime",
-    [ LinearSubOpt.sub; EquiSub.sub; AmberSub.sub; CompleteSub.sub] ) 
+    [ QuickSubOpt.sub; EquiSub.sub; AmberSub.sub; CompleteSub.sub] ) 
     
 let fnames_wo_equi = 
   ("No.\tLinOpt\tLinOptTime\tNominal\tNominalTime\tAmber\tAmberTime\tComplete\tCompleteTime",
-    [ LinearSubOpt.sub; NominalSub2.sub; AmberSub.sub; CompleteSub.sub])
+    [ QuickSubOpt.sub; NominalSub2.sub; AmberSub.sub; CompleteSub.sub])
 let fnames_wo_nominal_equi = 
   ("No.\tLinOpt\tLinOptTime\tAmber\tAmberTime\tComplete\tCompleteTime",
-    [ LinearSubOpt.sub; AmberSub.sub; CompleteSub.sub])
+    [ QuickSubOpt.sub; AmberSub.sub; CompleteSub.sub])
 
 let fnames_all = 
   ("No.\tLinOpt\tLinOptTime\tNominal\tNominalTime\tEqui\tEquiTime\tAmber\tAmberTime\tComplete\tCompleteTime",
-    [ LinearSubOpt.sub; NominalSub2.sub; EquiSub.sub; AmberSub.sub; CompleteSub.sub] )
+    [ QuickSubOpt.sub; NominalSub2.sub; EquiSub.sub; AmberSub.sub; CompleteSub.sub] )
 
 let fname_only_equi = 
   ("No.\tEqui\tEquiTime",
@@ -157,7 +157,7 @@ module MakeTests (P : PARAM) = struct
   let test_table1 () =
     let fnames = "No.\tLinOpt\tLinOptTime\tNominal\tNominalTime\tEqui\tEquiTime\tAmber\tAmberTime\tComplete\tCompleteTime" in
     let fs = [
-      LinearSubOpt.sub; 
+      QuickSubOpt.sub; 
       NominalSub2.sub; 
       EquiSub.sub; 
       AmberSub.sub; 
@@ -183,7 +183,7 @@ module MakeTests (P : PARAM) = struct
 
 
   let collect_smax () =
-    let f = LinearSubExt.sub0 ~profile:true in
+    let f = QuickSubExt.sub0 ~profile:true in
     let depth = 100 in
     let tests = [
       ("1", TestGen.test1_gen);
@@ -229,9 +229,9 @@ module MakeTests (P : PARAM) = struct
       ) depths) tests
 
   let test_table2 () =  
-    let fnames = " Depth\tWidth\tLinear\tLinearTime\tEqui\tEquiTime\tAmber\tAmberTime\tComplete\tCompleteTime" in
+    let fnames = " Depth\tWidth\tQuick\tQuickTime\tEqui\tEquiTime\tAmber\tAmberTime\tComplete\tCompleteTime" in
     let fs = [
-      LinearSubOpt.sub; 
+      QuickSubOpt.sub; 
       EquiSub.sub; 
       AmberSub.sub; 
       CompleteSub.sub
@@ -252,9 +252,9 @@ module MakeTests (P : PARAM) = struct
 
 
   let test_table3 () =  
-    let fnames = " Depth\tWidth\tLinear\tLinearTime\tEqui\tEquiTime\tAmber\tAmberTime\tComplete\tCompleteTime" in
+    let fnames = " Depth\tWidth\tQuick\tQuickTime\tEqui\tEquiTime\tAmber\tAmberTime\tComplete\tCompleteTime" in
     let fs = [
-      LinearSubOpt.sub; 
+      QuickSubOpt.sub; 
       EquiSub.sub; 
       AmberSub.sub; 
       CompleteSub.sub
