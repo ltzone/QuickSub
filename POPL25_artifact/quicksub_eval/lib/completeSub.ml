@@ -66,14 +66,25 @@ let sub (t1: typ) (t2: typ) =
       | (CENat, CEReal) -> true (* S-Base *)
       | (_, CETop) -> true (* S-Top *)
       | (CEFun (t1, t2), CEFun (t1', t2')) -> (* S-Fun *)
-          subh (t1', ut2, u2) (t1, ut1, u1)  (s2, s1) &&
-          subh (t2, ut1, u1) (t2', ut2, u2) (s1, s2)
+          if subh (t1', ut2, u2) (t1, ut1, u1) (s2, s1) then
+            subh (t2, ut1, u1) (t2', ut2, u2) (s1, s2)
+          else false
+          (* subh (t1', ut2, u2) (t1, ut1, u1)  (s2, s1) &&
+          subh (t2, ut1, u1) (t2', ut2, u2) (s1, s2) *)
       | (CEProd (t1, t2, _), CEProd (t1', t2', _)) -> (* S-Prod *)
+         if subh (t1, ut1, u1) (t1', ut2, u2) (s1, s2) then
+            subh (t2, ut1, u1) (t2', ut2, u2) (s1, s2)
+          else false
+          (*
           subh (t1, ut1, u1) (t1', ut2, u2) (s1, s2) &&
-          subh (t2, ut1, u1) (t2', ut2, u2) (s1, s2)
+          subh (t2, ut1, u1) (t2', ut2, u2) (s1, s2) *)
       | (CESum (t1, t2, _), CESum (t1', t2', _)) -> (* S-Sum *)
+          if subh (t1, ut1, u1) (t1', ut2, u2) (s1, s2) then
+            subh (t2, ut1, u1) (t2', ut2, u2) (s1, s2)
+          else false
+          (*
           subh (t1, ut1, u1) (t1', ut2, u2) (s1, s2) &&
-          subh (t2, ut1, u1) (t2', ut2, u2) (s1, s2)
+          subh (t2, ut1, u1) (t2', ut2, u2) (s1, s2) *)
       | (CEVar m, CEVar n) -> (* S-Rec *)
           if s1.(m).(n) then true else
             (s1.(m).(n) <- true;

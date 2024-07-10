@@ -1,3 +1,0 @@
-(test
- (libraries quicksub_eval)
- (name quicksub_eval))

@@ -73,18 +73,24 @@ let rec subh (i: int) (e:env) (x:typ) (y:typ) : bool * int =
   | (_, Top) -> true, i
   | (Fun (a1, a2), Fun (b1, b2)) ->
       let (b1_sub, i1) = subh i e b1 a1 in
-      let (b2_sub, i2) = subh i1 e a2 b2 in
-      b1_sub && b2_sub, i2
+      if not b1_sub then false, i1
+      else
+        let (b2_sub, i2) = subh i1 e a2 b2 in
+        b2_sub, i2
       (* subh i e b1 a1 && subh i e a2 b2 *)
   | (Prod (a1, a2), Prod (b1, b2)) ->
       let (b1_sub, i1) = subh i e a1 b1 in
-      let (b2_sub, i2) = subh i1 e a2 b2 in
-      b1_sub && b2_sub, i2
-      (* subh i e a1 b1 && subh i e a2 b2 *)
+      if not b1_sub then false, i1
+      else
+        let (b2_sub, i2) = subh i1 e a2 b2 in
+        b1_sub && b2_sub, i2
+        (* subh i e a1 b1 && subh i e a2 b2 *)
   | (Sum (a1, a2), Sum (b1, b2)) ->
       let (b1_sub, i1) = subh i e a1 b1 in
-      let (b2_sub, i2) = subh i1 e a2 b2 in
-      b1_sub && b2_sub, i2
+      if not b1_sub then false, i1
+      else
+        let (b2_sub, i2) = subh i1 e a2 b2 in
+        b1_sub && b2_sub, i2
       (* subh i e a1 b1 && subh i e a2 b2 *)
   | (Var k, Var j) when k = j -> 
       true, i

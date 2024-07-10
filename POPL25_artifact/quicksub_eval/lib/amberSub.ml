@@ -61,17 +61,28 @@ let rec subh (i: int) (e:env) (x:typ) (y:typ) : bool =
   | (a, Top) -> wf_type e a i
   | (Fun (a1, a2), Fun (b1, b2)) ->
       let res1 = subh i e b1 a1 in
-      let res2 = subh i e a2 b2 in
-      res1 && res2
+      if not res1 then false
+      else
+        let res2 = subh i e a2 b2 in
+        res2
+      (* let res2 = subh i e a2 b2 in
+      res1 && res2 *)
   | (Prod (a1, a2), Prod (b1, b2)) ->
       let res1 = subh i e a1 b1 in
-      let res2 = subh i e a2 b2 in
-      res1 && res2
+      if not res1 then false
+      else 
+        let res2 = subh i e a2 b2 in
+        res2
+      (* let res2 = subh i e a2 b2 in
+      res1 && res2 *)
   | (Sum (a1, a2), Sum (b1, b2)) ->
       (* subh i e a1 b1 && subh i e a2 b2 *)
       let res1 = subh i e a1 b1 in
-      let res2 = subh i e a2 b2 in
-      res1 && res2
+      if not res1 then false
+      else
+        let res2 = subh i e a2 b2 in
+        res2
+        (* res1 && res2 *)
   | (Var i, Var j) -> List.mem (i, j) e
   | (Rec (j, a), Rec (k, b)) when j = k  && equiv_type a b -> 
       (* wf_type e (Rec (j, a)) i *)

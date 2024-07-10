@@ -1,4 +1,4 @@
 (executable
  (public_name quicksub_eval)
  (name main)
- (libraries quicksub_eval))
+ (libraries quicksub_eval cmdliner))
