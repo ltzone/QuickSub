@@ -1,0 +1,4 @@
+(library
+ (name quicksub_eval)
+ (libraries unix)
+ (wrapped false))
