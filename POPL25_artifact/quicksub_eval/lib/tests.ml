@@ -15,18 +15,18 @@ end
 
 
 let fnames_wo_nominal = 
-  ("No.\tLinOpt\tLinOptTime\tEqui\tEquiTime\tAmber\tAmberTime\tComplete\tCompleteTime",
+  ("No.\tQuickOpt\tQuickOptTime\tEqui\tEquiTime\tAmber\tAmberTime\tComplete\tCompleteTime",
     [ QuickSubOpt.sub; EquiSub.sub; AmberSub.sub; CompleteSub.sub] ) 
     
 let fnames_wo_equi = 
-  ("No.\tLinOpt\tLinOptTime\tNominal\tNominalTime\tAmber\tAmberTime\tComplete\tCompleteTime",
+  ("No.\tQuickOpt\tQuickOptTime\tNominal\tNominalTime\tAmber\tAmberTime\tComplete\tCompleteTime",
     [ QuickSubOpt.sub; NominalSub2.sub; AmberSub.sub; CompleteSub.sub])
 let fnames_wo_nominal_equi = 
-  ("No.\tLinOpt\tLinOptTime\tAmber\tAmberTime\tComplete\tCompleteTime",
+  ("No.\tQuickOpt\tQuickOptTime\tAmber\tAmberTime\tComplete\tCompleteTime",
     [ QuickSubOpt.sub; AmberSub.sub; CompleteSub.sub])
 
 let fnames_all = 
-  ("No.\tLinOpt\tLinOptTime\tNominal\tNominalTime\tEqui\tEquiTime\tAmber\tAmberTime\tComplete\tCompleteTime",
+  ("No.\tQuickOpt\tQuickOptTime\tNominal\tNominalTime\tEqui\tEquiTime\tAmber\tAmberTime\tComplete\tCompleteTime",
     [ QuickSubOpt.sub; NominalSub2.sub; EquiSub.sub; AmberSub.sub; CompleteSub.sub] )
 
 let fname_only_equi = 
@@ -155,7 +155,7 @@ module MakeTests (P : PARAM) = struct
 
 
   let test_table1 () =
-    let fnames = "No.\tLinOpt\tLinOptTime\tNominal\tNominalTime\tEqui\tEquiTime\tAmber\tAmberTime\tComplete\tCompleteTime" in
+    let fnames = "No.\tQuickOpt\tQuickOptTime\tNominal\tNominalTime\tEqui\tEquiTime\tAmber\tAmberTime\tComplete\tCompleteTime" in
     let fs = [
       QuickSubOpt.sub; 
       NominalSub2.sub; 

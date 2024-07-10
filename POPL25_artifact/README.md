@@ -39,13 +39,13 @@ opam switch remove quicksub
 
 ## The Coq Proof
 
-There are two directories in this artifact. The `linear_coq` directory contains the proofs for the main system presented in Section 3 of the paper. The `linear_coq_rcd` directory contains the proofs for the main system extended with record types in Section 4 of the paper.
+There are two directories in this artifact. The `quick_coq` directory contains the proofs for the main system presented in Section 3 of the paper. The `quick_coq_rcd` directory contains the proofs for the main system extended with record types in Section 4 of the paper.
 
-The `linear_coq` and `linear_coq_rcd` share the same structure, in which all the proof files have a sequential dependency, as can be found in `_CoqProject` file of each directory. To test all the proofs, simply run `make` in the corresponding directory.
+The `quick_coq` and `quick_coq_rcd` share the same structure, in which all the proof files have a sequential dependency, as can be found in `_CoqProject` file of each directory. To test all the proofs, simply run `make` in the corresponding directory.
 
 ```
 # test the proofs for the main system
-cd linear_coq
+cd quick_coq
 make
 ```
 
@@ -67,7 +67,7 @@ Note that there are a few differences in the formalization compared to the paper
 
 To justify the two changes above, we formalize another relation, which has the precise correspondence to the paper version of the rules, as  `Sub2` in `AltRules.v`, and prove it to be equivalent to the `Sub` relation (assuming types and environments are well-formed) in `AltRules.v`
 
-The weakly positive restriction and subtyping relations in `linear_coq` are directly adapted from [Zhou et al. 2022]'s [formalization](https://github.com/juda/Iso-Recursive-Subtyping/blob/3ca34c6f0c157ba085d873952d8babdbfe6b0f61/Journal/src/AmberBase.v#L77-L129). In the `linear_coq_rcd` proof we drop the subtyping relation, and extend the weakly positive restriction to consider equivalent types up to record permutation.
+The weakly positive restriction and subtyping relations in `quick_coq` are directly adapted from [Zhou et al. 2022]'s [formalization](https://github.com/juda/Iso-Recursive-Subtyping/blob/3ca34c6f0c157ba085d873952d8babdbfe6b0f61/Journal/src/AmberBase.v#L77-L129). In the `quick_coq_rcd` proof we drop the subtyping relation, and extend the weakly positive restriction to consider equivalent types up to record permutation.
 
 
 ### Paper to Proof Table
@@ -121,8 +121,8 @@ can be reproduced.
     ├── amberSub.ml     # The Amber Rules Implementation
     ├── completeSub.ml  # The Ligatti's Complete Subtyping Implementation
     ├── equiSub.ml      # The equi-recurive subtyping implementation
-    ├── linearSubExt.ml # The direct implementation QuickSub{} algorithm, which uses functional sets
-    ├── linearSubOpt.ml # The slightly optimized QuickSub{} algorithm, which uses imperative boolean arrays for equality variable sets
+    ├── quickSubExt.ml # The direct implementation QuickSub{} algorithm, which uses functional sets
+    ├── quickSubOpt.ml # The slightly optimized QuickSub{} algorithm, which uses imperative boolean arrays for equality variable sets
     ├── nominalSub.ml   # The nominal subtyping implementation
     ├── nominalSub2.ml  # The slightly optimized nominal subtyping implementation that avoids substitution on positive variables
     |
