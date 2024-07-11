@@ -17,8 +17,8 @@ typ_genh 0 depth
 (* generate [mu a. a -> mu b. b -> ... b1 <: mu a. a -> mu b. b -> ... b2]  *)
 let deep_subtyp_gen (depth: int) b1 b2 = 
 let rec typ_genh max_var dep base = 
-  if dep = 0 then base else
-    Rec (max_var, Fun (Var max_var, typ_genh (max_var + 1) (dep - 1) base)) in
+  if dep = 0 then (Fun (Var (max_var-1), base)) else
+    Rec (max_var, Fun (Nat, typ_genh (max_var + 1) (dep - 1) base)) in
 let t1 = typ_genh 0 depth b1 in
 let t2 = typ_genh 0 depth b2 in
 (t1, t2)
