@@ -1,5 +1,6 @@
 open Defs;;
-
+(* This file defines some pattern generators for the test cases.
+  For concrete test cases, see tests.ml *)
 
 let typ_pair_gen (depth: int) = 
   let ts = typgen depth in

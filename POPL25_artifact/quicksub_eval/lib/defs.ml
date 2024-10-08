@@ -4,7 +4,10 @@
   so for all types T passed as arguments to the subtype-testing function [sub],
   the set of type variables in T is {0 .. n} for some n, we also assume that T never 
   uses undeclared type variables, and has been alpha-converted to ensure the uniqueness
-  of every declared variable
+  of every declared variable. This is the same treatment as Ligatti et al. (2017).
+
+  Records are represented as maps from field names to types, and we assume that the field names
+  are unique in a record type.
 
 *)
 

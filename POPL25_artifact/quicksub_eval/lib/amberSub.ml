@@ -1,5 +1,13 @@
 
-(* Implemented for named index, with subsitution *)
+(* 
+This is the implementation of the Amber subtyping algorithm, which first
+tries to check reflexivity and if that fails then introduces new variables to check
+subtyping for recursive types.
+
+For record types, the `equiv_type` function is used to check equivalence of types,
+which considers the permutation of fields in the record type.
+
+*)
 
 open Defs;;
 

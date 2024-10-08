@@ -1,6 +1,13 @@
 open Defs
 open TestGen
 
+(* This file defines a module `MakeTests` to generate test cases for the evaluation experiments.
+   The `MakeTests` module is parameterized by a module type `PARAM` for setting the parameters of the test cases.
+   The concrete test functions call the test generators in `TestGen` and the subtyping algorithms in `Defs` to run the tests.
+   The numbering of the test function corresponds to the numbering of the test cases in the paper.
+*)
+
+
 exception Timeout
 
 

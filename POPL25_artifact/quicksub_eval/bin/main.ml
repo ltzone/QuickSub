@@ -1,4 +1,11 @@
 open Cmdliner
+(* This is the command line interface for the evaluation experiments
+
+   Detailed description of the experiments can be found in the README.md file
+
+   You can also run `dune exec quicksub_eval -- --help` to see the available options
+
+*)
 
 
 module PARAM = struct
@@ -47,35 +54,33 @@ let set_params = Term.(const (fun t d1 w d2 () ->
 ) $ max_time_arg $ depth1_arg $ width_arg $ depth2_arg $ const ())
 
 let test_table1_cmd =
-  let doc = "Run test_table1" in
+  let doc = "Run tests for the first table" in
   let info = Cmd.info "table1" ~doc in
   let term = Term.(const (fun _ -> TestSuite.test_table1 ()) $ set_params) in
   Cmd.v info term
   
 
 let collect_smax_cmd =
-  let doc = "Run collect_smax" in
+  let doc = "Collect |S| for the first table " in
   let info = Cmd.info "smax" ~doc in
   let term = Term.(const (fun _ -> TestSuite.collect_smax ()) $ set_params) in
-  (* let term = Term.(const TestSuite.collect_smax $ const ()) in *)
   Cmd.v info term
 
 let test_plot1_cmd =
-  let doc = "Run test_plot1" in
+  let doc = "Run tests for the first plot" in
   let info = Cmd.info "plot1" ~doc in
-  (* let term = Term.(const TestSuite.test_plot1 $ const ()) in *)
   let term = Term.(const (fun _ -> TestSuite.test_plot1 ()) $ set_params) in
   Cmd.v info term
 
 let test_table2_cmd =
-  let doc = "Run test_table2" in
+  let doc = "Run tests for the second table - various patterns of record subtyping" in
   let info = Cmd.info "table2" ~doc in
   (* let term = Term.(const TestSuite.test_table2 $ const ()) in *)
   let term = Term.(const (fun _ -> TestSuite.test_table2 ()) $ set_params) in
   Cmd.v info term
 
 let test_table3_cmd =
-  let doc = "Run test_table3" in
+  let doc = "Run tests for the third table - records with different depths and widths" in
   let info = Cmd.info "table3" ~doc in
   (* let term = Term.(const TestSuite.test_plot2 $ const ()) in *)
   let term = Term.(const (fun _ -> TestSuite.test_table3 ()) $ set_params) in

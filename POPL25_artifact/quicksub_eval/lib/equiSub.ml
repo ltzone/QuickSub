@@ -1,11 +1,20 @@
 open Defs;;
+(* This is the implementation of Gapeyev et al. 2002's algorithm for 
+   checking equi-recursive subtyping.
+*)
+
 
 exception Foo of string
 
+
+(* The environment for mapping variables to their true types (to delay the substitution when unfolding recursive types) *)
 type tenv = (int * typ) list
 
+(* The environment for storing subtyping assumptions *)
 type aenv = (typ * typ) list
 
+
+(* checking whether two types [t1] and [t2] are in the assumption context [ae], given substitution map [te1] and [te2] for [t1] and [t2] respectively  *)
 let rec in_aenv  (te1 : tenv) (te2 : tenv) (ae : aenv) (t1 : typ) (t2 : typ) : bool =
   match t1 with
   | Var i -> 
@@ -21,6 +30,7 @@ let rec in_aenv  (te1 : tenv) (te2 : tenv) (ae : aenv) (t1 : typ) (t2 : typ) : b
       | _ -> 
             List.mem (t1, t2) ae 
 
+(* recover the true type of a variable from the substitution environment *)
 let rec form_type (te:tenv) t : typ = 
     match t with
     | Var i -> (match List.find_opt (fun (j, _) -> i = j) te with
@@ -33,6 +43,9 @@ let rec form_type (te:tenv) t : typ =
     | Rcd fs -> Rcd (TMap.map (fun t -> form_type te t) fs)
     | _ -> t
 
+
+
+(* The main function for checking subtyping *)
 let rec subh (te1 : tenv) (te2 : tenv) (ae : aenv) (t1 : typ) (t2 : typ) : aenv option =
 
     let t1' = form_type te1 t1 in

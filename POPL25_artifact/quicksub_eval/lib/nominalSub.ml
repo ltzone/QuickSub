@@ -1,5 +1,8 @@
 open Defs;;
 
+(* This is the implementation of Zhou et al. 2022's algorithm for 
+   checking subtyping with nominal unfolding. *)
+
 type env = int list
 
 
@@ -95,8 +98,6 @@ let rec subh (i: int) (e:env) (x:typ) (y:typ) : bool * int =
   | (Var k, Var j) when k = j -> 
       true, i
   | (Rec (k, a), Rec (j, b))  ->
-      (* when k = j ->  *)
-        (* TODO: alpha renaming?? or assumption? *)
       let fresh_i = i + 1 in
       let (a_lift, i1) = lift_typ i fresh_i (rename k fresh_i a) in
       let (b_lift, i2) = lift_typ i i1 (rename j fresh_i b) in
@@ -106,7 +107,6 @@ let rec subh (i: int) (e:env) (x:typ) (y:typ) : bool * int =
       subh fresh_i e a_subst b_subst
   | Rcd fs, Rcd gs ->
       TMap.for_all (fun l g -> TMap.mem l fs && fst (subh i e (TMap.find l fs) g)) gs, i
-       (* TOFIX: the i should be accummulated  *)
   | _, _ -> false, i
     
 

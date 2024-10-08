@@ -1,5 +1,17 @@
 open Defs
 
+(* This is the implementation of Ligatti et al. (2017)'s completeness algorithm
+   for iso-recursive subtyping.
+
+   We rewrite the ML code in their paper in OCaml.
+
+   We use the same convention of named variables as in their paper, and maintain
+   this convention throughout other subtyping algorithm implementations, as 
+   can been seen in the `defs.ml` file.
+
+*)
+
+
 type cetyp = CENat | CEReal | CEFun of cetyp * cetyp
            | CEVar of int | CEProd of cetyp * cetyp * bool
            | CESum of cetyp * cetyp * bool

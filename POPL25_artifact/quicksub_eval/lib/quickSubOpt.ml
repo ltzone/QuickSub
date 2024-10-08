@@ -1,5 +1,34 @@
 open Defs;;
 
+
+(* This is the optimized QuickSub implementation with support for record types.
+   We use imperative arrays to represent the set of equality variable set.
+
+In the optimized version of the algorithm, we will pass two imperative boolean arrays 
+as arguments in the subtyping function, one for deciding whether a variable is in 
+the equality variable set and the other for deciding whether a variable is free in the type. 
+
+Each array has a size of n, the total number of recursive variables in the type, and will 
+be updated on the fly while recursive types are traversed. Since our implementation adopts 
+the same setting as Ligatti et al.’s ML implementation, in which variables are indexed 
+by distinct consecutive integers starting from 0, the booleans in the arrays can simply be 
+indexed by the variable index
+
+For implementing the `QS-receqin` rule with imperative arrays, the following operations are performed:
+
+- before making the recursive call on the inner body, setting the free variable array of z to true 
+  so that z is considered as free variable in the inner body. The update takes O(1) time
+- after the recursive call, determining the membership of z in the set takes O(1) time
+- traversing the free variable array and updating the equality variable array for union takes O(n) time
+- removing z from the set (by setting the corresponding boolean in the array to false) takes O(1) time
+- updating the free variable array to remove z takes O(1) time
+
+The only costly operation is the O(n) set union operation, and the rest of the operations are all O(1), 
+a large improvement over the functional Sets implementation.
+
+
+*)
+
 type mode = Pos | Neg
 
 

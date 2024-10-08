@@ -1,5 +1,9 @@
 open Defs;;
 
+(* This is the implementation of Zhou et al. 2022's proposal
+   for checking subtyping with nominal unfolding, with the awareness of polarity 
+   of recursive variables to save the cost of unfolding on positive recursive variables. *)
+
 type env = int list
 
 

@@ -1,5 +1,10 @@
 open Defs;;
 
+(* This is the QuickSub implementation with support for record types.
+   We use functional sets to represent the set of equality variable set
+*)
+
+
 type mode = Pos | Neg
 
 
@@ -42,14 +47,13 @@ let rec fv (t:typ) =
 
 let rec subh  (evs_cnt: int ref) (e:env) (m:mode) (x:typ) (y:typ) : (cmp * VSet.t) option =
   let subh e m x y = 
-    (* if profile then *)
       (let res = subh evs_cnt e m x y in
       (match res with
       | Some (Eq, evs_res) -> evs_cnt := max (!evs_cnt) (VSet.cardinal evs_res)
       | _ -> ());
       res)
   in
-    (* else subh  evs_cnt e m x y in *)
+  (* update the subh function so that it can collect the |S| data in the run *)
   
   match (x, y) with
   | (Nat, Nat) -> Some (Eq, VSet.empty)
