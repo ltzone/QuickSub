@@ -13,6 +13,15 @@ The artifact accompanying the paper *QuickSub: Efficient Iso-Recursive Subtyping
 
 ## Download, Installation, and Sanity Testing
 
+### Using Virtual Machine Image
+
+We provide a virtual machine image with the artifact pre-installed. The VM image (`ova` file) can be downloaded from the Zenodo files. The VM is based on Ubuntu 20.04 and is tested on VirtualBox 7.1.2 on both new (Apple Chips) and old (Intel) Mac machines.
+
+Open the `ova` image using VirtualBox and use the default settings to import the VM. The VM is configured with 2 CPU cores and 4 GB of RAM. The password for the user `vboxuser` is `changeme`.
+
+The artifact can be found on the desktop of the VM. You can jump to the *Sanity Testing* section to verify the installation. In addition, a `coqide` is pre-installed on the VM. By running `coqide` in the terminal, you can open the Coq proofs and interactively check the proofs.
+
+
 ### Prerequisites
 
 To build and test this artifact, you will need:
@@ -212,7 +221,7 @@ dune exec quicksub_eval -- table3 --max-time 100
 
 The results will be demonstrated in the terminal, and the claims in the paper can be verified by checking that the data align with the performance trends presented in the paper. 
 
-Note that the overall runtime can vary depending on the machine, and the performance on the virtual machine should be slower than the data presented in the paper. The results in the paper were obtained on a MacBook Pro with a 2 GHz Quad-Core Intel Core i5 processor and 16 GB RAM.
+Note that the overall runtime can vary depending on the machine, and the performance on the virtual machine should be slower than the data presented in the paper. It might be helpful to reduce the preset depth/width of the benchmarks in the virtual machine to avoid timeout or stack overflow, or alternatively, run the evaluation on a local machine for a more accurate comparison. The results in the paper were obtained on a MacBook Pro with a 2 GHz Quad-Core Intel Core i5 processor and 16 GB RAM using the pre-set depth and width values above.
 
 
 ## Additional Information
