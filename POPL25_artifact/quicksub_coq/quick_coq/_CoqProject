@@ -7,3 +7,5 @@ PosVar.v
 LinearRule.v
 Transitivity.v
 Typesafety.v
+Equiv.v
+AltRules.v

@@ -6,9 +6,9 @@ The artifact accompanying the paper *QuickSub: Efficient Iso-Recursive Subtyping
 
 ## List of Claims
 
-- **Claim 1.** All the theorem statements in Section 3 and 4 of the paper are mechanized and proved in Coq. The proofs will be evaluated in Step ? of the evaluation instructions.
-- **Claim 2.** In Table 1 and Figure 8 of Section 5, we test the asymptotic performance of QuickSub against other subtyping algorithms and claim that QuickSub *generally performs the best across most scenarios* except for reflexive subtyping cases and *demonstrates a linear complexity*. This will be evaluated in Step ? of the evaluation instructions.
-- **Claim 3.** In Table 2 of Section 5, we evaluate QuickSub on practical record subtyping scenarios and claim that with large widths and moderate depths, QuickSub *outperforms other algorithms*. We further vary the depth and width in Figure 9 to show that QuickSub *scales well* with increasing record sizes and recursive depths. This will be evaluated in Step ?.
+- **Claim 1.** All the theorem statements in Section 3 and 4 of the paper are mechanized and proved in Coq. The proofs will be evaluated in Step 1 and 2 of the evaluation instructions.
+- **Claim 2.** In Table 1 and Figure 8 of Section 5, we test the asymptotic performance of QuickSub against other subtyping algorithms and claim that QuickSub *generally performs the best across most scenarios* except for reflexive subtyping cases and *demonstrates a linear complexity*. This will be evaluated in Step 3 of the evaluation instructions.
+- **Claim 3.** In Table 2 of Section 5, we evaluate QuickSub on practical record subtyping scenarios and claim that with large widths and moderate depths, QuickSub *outperforms other algorithms*. We further vary the depth and width in Figure 9 to show that QuickSub *scales well* with increasing record sizes and recursive depths. This will be evaluated in Step 3.
 
 
 ## Download, Installation, and Sanity Testing
@@ -31,7 +31,7 @@ To build and test this artifact, you will need:
 The following steps will guide you through setting up the artifact from source. Alternatively, we have provided a pre-build version of the artifact in a virtual machine image. Please refer to the next section for instructions on using the VM.
 
 
-1. **Install OCaml and Coq via Opam:** Please ensure you have `opam` installed. Then, run the following commands to install OCaml and Coq on a local switch:
+1. **Install OCaml and Coq via Opam:** Please ensure you have [opam](https://opam.ocaml.org/doc/Install.html) installed. Then, run the following commands to install OCaml and Coq on a local switch:
    ```bash
    opam switch create quicksub 4.12.0
    eval $(opam env)
@@ -64,11 +64,6 @@ The following steps will guide you through setting up the artifact from source. 
    ```bash
    opam switch remove quicksub
    ```
-
-### Virtual Machine Image
-
-
-TODO
 
 
 ### Sanity Testing
