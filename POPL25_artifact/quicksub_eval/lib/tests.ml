@@ -259,27 +259,42 @@ module MakeTests (P : PARAM) = struct
 
 
   let test_table3 () =  
-    let fnames = " Depth\tWidth\tQuick\tQuickTime\tEqui\tEquiTime\tAmber\tAmberTime\tComplete\tCompleteTime" in
+    (* let fnames = " Depth\tWidth\tQuick\tQuickTime\tEqui\tEquiTime\tAmber\tAmberTime\tComplete\tCompleteTime" in *)
+    (* let fnames = " Depth\tWidth\tQuick\tQuickTime\tAmber\tAmberTime\tComplete\tCompleteTime" in *)
+    let fnames = " Depth\tWidth\tEqui\tEquiTime" in
     let fs = [
-      QuickSubOpt.sub; 
+      (* QuickSubOpt.sub;  *)
       EquiSub.sub; 
-      AmberSub.sub; 
-      CompleteSub.sub
+      (* AmberSub.sub; 
+      CompleteSub.sub *)
       ] in
     let configs = [
     (* depth * width *)
-      (1, 100);
+      (* (1, 100);
+      (1, 500);
       (1, 1000);
-      (1, 2000);
+      (1, 1500);
+      (1, 2000); *)
       (10, 100);
+      (10, 500);
       (10, 1000);
-      (10, 2000);
+      (* (10, 1500); *)
+      (* (10, 2000); *)
       (100, 100);
-      (100, 1000); 
-      (100, 2000);
-      (200, 100);
+      (* (100, 500);
+      (100, 1000);
+      (100, 1500);
+      (100, 2000); *)
+      (* (200, 100); *)
+      (* (200, 500);
       (200, 1000);
+      (200, 1500);
       (200, 2000);
+      (2000, 100);
+      (2000, 500);
+      (2000, 1000);
+      (2000, 1500);
+      (2000, 2000); *)
     ]
     in
     test_group fnames fs configs
