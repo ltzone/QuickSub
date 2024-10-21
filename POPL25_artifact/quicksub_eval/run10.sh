@@ -1,10 +1,10 @@
-dune exec quicksub_eval -- plot1 --depth1 5000 --max-time 100
-dune exec quicksub_eval -- plot1 --depth1 5000 --max-time 100
-dune exec quicksub_eval -- plot1 --depth1 5000 --max-time 100
-dune exec quicksub_eval -- plot1 --depth1 5000 --max-time 100
-dune exec quicksub_eval -- plot1 --depth1 5000 --max-time 100
-dune exec quicksub_eval -- plot1 --depth1 5000 --max-time 100
-dune exec quicksub_eval -- plot1 --depth1 5000 --max-time 100
-dune exec quicksub_eval -- plot1 --depth1 5000 --max-time 100
-dune exec quicksub_eval -- plot1 --depth1 5000 --max-time 100
-dune exec quicksub_eval -- plot1 --depth1 5000 --max-time 100
+dune exec quicksub_eval -- equi --max-time 100
+dune exec quicksub_eval -- equi --max-time 100
+dune exec quicksub_eval -- equi --max-time 100
+dune exec quicksub_eval -- equi --max-time 100
+dune exec quicksub_eval -- equi --max-time 100
+dune exec quicksub_eval -- equi --max-time 100
+dune exec quicksub_eval -- equi --max-time 100
+dune exec quicksub_eval -- equi --max-time 100
+dune exec quicksub_eval -- equi --max-time 100
+dune exec quicksub_eval -- equi --max-time 100

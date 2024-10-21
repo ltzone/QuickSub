@@ -66,6 +66,12 @@ let collect_smax_cmd =
   let term = Term.(const (fun _ -> TestSuite.collect_smax ()) $ set_params) in
   Cmd.v info term
 
+let run_equi_cmd = 
+  let doc = "Run tests for the EquiSub algorithm" in
+  let info = Cmd.info "equi" ~doc in
+  let term = Term.(const (fun _ -> TestSuite.test_equi ()) $ set_params) in
+  Cmd.v info term
+
 let test_plot1_cmd =
   let doc = "Run tests for the first plot" in
   let info = Cmd.info "plot1" ~doc in
@@ -88,7 +94,7 @@ let test_table3_cmd =
 
 
 let () =
-  let cmds = [test_table1_cmd; collect_smax_cmd; test_plot1_cmd; test_table2_cmd; test_table3_cmd] in
+  let cmds = [test_table1_cmd; collect_smax_cmd; test_plot1_cmd; test_table2_cmd; test_table3_cmd; run_equi_cmd] in
 
   (* set the command line argument inputs *)
 
