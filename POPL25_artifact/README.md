@@ -7,8 +7,8 @@ The artifact accompanying the paper *QuickSub: Efficient Iso-Recursive Subtyping
 ## List of Claims
 
 - **Claim 1.** All the theorem statements in Section 3 and 4 of the paper are mechanized and proved in Coq. The proofs will be evaluated in Step 1 and 2 of the evaluation instructions.
-- **Claim 2.** In Table 1 and Figure 8 of Section 5, we test the asymptotic performance of QuickSub against other subtyping algorithms and claim that QuickSub *generally performs the best across most scenarios* except for reflexive subtyping cases and *demonstrates a linear complexity*. This will be evaluated in Step 3 of the evaluation instructions.
-- **Claim 3.** In Table 2 of Section 5, we evaluate QuickSub on practical record subtyping scenarios and claim that with large widths and moderate depths, QuickSub *outperforms other algorithms*. We further vary the depth and width in Figure 9 to show that QuickSub *scales well* with increasing record sizes and recursive depths. This will be evaluated in Step 3.
+- **Claim 2.** In Table 1 and Figure 11 of Section 5, we test the asymptotic performance of QuickSub against other subtyping algorithms and claim that QuickSub *generally performs the best across most scenarios* except for reflexive subtyping cases and *demonstrates a linear complexity*. This will be evaluated in Step 3 of the evaluation instructions.
+- **Claim 3.** In Table 2 of Section 5, we evaluate QuickSub on practical record subtyping scenarios and claim that with large widths and moderate depths, QuickSub *outperforms other algorithms*. We further vary the depth and width in Figure 12 to show that QuickSub *scales well* with increasing record sizes and recursive depths. This will be evaluated in Step 3.
 
 
 ## Download, Installation, and Sanity Testing
@@ -192,13 +192,13 @@ To evaluate the implementation, run the following commands, which correspond to 
 # Table 1: Time taken for benchmarks with depth 5000 for (1) to (7) and 500 for (8).
 dune exec quicksub_eval -- table1
 
-# Figure 8: Comparison of different works across multiple tests
+# Figure 11: Comparison of different works across multiple tests
 dune exec quicksub_eval -- plot1
 
 # Table 2: Runtime results for subtyping record types (depth = 100, width = 1000).
 dune exec quicksub_eval -- table2
 
-# Table 3: Runtime results for different algorithms with varying benchmark sizes.
+# Table 12: Runtime results for different algorithms with varying benchmark sizes.
 dune exec quicksub_eval -- table3
 ```
 
@@ -208,13 +208,13 @@ For quicker testing, the default values for depth and timeout are reduced to fin
 # Full-scale Table 1 benchmark with depth 5000:
 dune exec quicksub_eval -- table1 --depth1 5000 --max-time 100
 
-# Full-scale Figure 8 comparison:
+# Full-scale Figure 11 comparison:
 dune exec quicksub_eval -- plot1 --depth1 5000 --max-time 100
 
 # Full-scale Table 2 runtime results for record types:
 dune exec quicksub_eval -- table2 --depth2 100 --width 1000 --max-time 100
 
-# Full-scale Table 3 benchmark with varying sizes:
+# Full-scale Table 12 benchmark with varying sizes:
 dune exec quicksub_eval -- table3 --max-time 100
 ```
 
