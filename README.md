@@ -261,13 +261,13 @@ The paper to proof contains the proofs for the main system presented in Section 
 | Theorem 3.5 QuickSub equivalence implies equality    | Variance.v | `Msub_refl_inv` |
 | Theorem 3.6 Completeness of QuickSub                 | Equiv.v | `pos_esa_complete_final` |
 | Lemma 3.8 Generalized completeness of QuickSub                   | Equiv.v | `pos_esa_complete` |
-| Theorem 3.9 Unfolding lemma (strict subtype)   | Equiv.v | `unfolding_lemma` |
-| Theorem 3.9 Unfolding lemma (equality)  | Equiv.v | `unfolding_lemma_eq` |
+| Theorem 3.9 Unfolding lemma (strict subtype)   | LinearRule.v.v | `unfolding_lemma` |
+| Theorem 3.9 Unfolding lemma (equality)  | LinearRule.v.v | `unfolding_lemma_eq` |
 | Lemma 3.10 Generalized unfolding lemma        | LinearRule.v | `generalized_unfolding_lemma` |
 | Theorem 3.11 Reflexivity        | LinearRule.v | `Msub_refl` |
 | Theorem 3.12 Transitivity        | Transitivity.v | `trans_aux2` |
-| Theorem 3.13 Progress                                         | Progress.v | `progress` |
-| Theorem 3.14 Preservation                                     | Preservation.v | `preservation` |
+| Theorem 3.13 Progress                                         | TypeSafety.v | `progress` |
+| Theorem 3.14 Preservation                                     | TypeSafety.v | `preservation` |
 
 For the system with records, the definitions and proofs can be found in a similar position as the main system.
 
