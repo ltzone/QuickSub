@@ -1,7 +1,0 @@
--R . Top
-
-Rules.v
-Infra.v
-Transitivity.v
-Unfolding.v
-Typesafety.v

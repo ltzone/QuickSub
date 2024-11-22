@@ -1,9 +1,0 @@
--R . Top
-
-Rules.v
-Infra.v
-Variance.v
-PosVar.v
-LinearRule.v
-Transitivity.v
-Typesafety.v

@@ -1,4 +1,0 @@
-(executable
- (public_name linear_eval)
- (name main)
- (libraries linear_eval))

@@ -1,4 +1,0 @@
-(library
- (name linear_eval)
- (libraries unix)
- (wrapped false))
