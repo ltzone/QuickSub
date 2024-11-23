@@ -1,7 +1,7 @@
 # QuickSub: Efficient Iso-Recursive Subtyping
 
 The artifact accompanying the paper *QuickSub: Efficient Iso-Recursive Subtyping* includes two parts:
-1. The mechanized **Coq proof** for the QuickSub system.
+1. The mechanized **Coq proof** for the QuickSub subtyping algorithm.
 2. The **OCaml implementation** for the QuickSub algorithm and evaluations comparing other subtyping algorithms.
 
 ## List of Claims
@@ -15,12 +15,13 @@ The artifact accompanying the paper *QuickSub: Efficient Iso-Recursive Subtyping
 
 ### Using Virtual Machine Image
 
-We provide a virtual machine image with the artifact pre-installed. The VM image (`ova` file) can be downloaded from the Zenodo files. The VM is based on Ubuntu 20.04 and is tested on VirtualBox 7.1.2 on both new (Apple Chips) and old (Intel) Mac machines.
+We provide a virtual machine image with the artifact pre-installed. The VM image (`ova` file) can be downloaded from [Zenodo](https://zenodo.org/records/13906402). The VM is based on Ubuntu 20.04 and is tested on VirtualBox 7.1.2 on old (Intel) Mac machines.
 
 Open the `ova` image using VirtualBox and use the default settings to import the VM. The VM is configured with 2 CPU cores and 4 GB of RAM. The password for the user `vboxuser` is `changeme`.
 
 The artifact can be found on the desktop of the VM. You can jump to the *Sanity Testing* section to verify the installation. In addition, a `coqide` is pre-installed on the VM. By running `coqide` in the terminal, you can open the Coq proofs and interactively check the proofs.
 
+> Note that the README file on Zenodo is outdated. Please refer to this README file for the most recent instructions. However, the contents in `quicksub_coq` and `quicksub_eval` directories are the same as in this repository. We recommend using the source code in this repository for the most up-to-date version of the artifact in case of any future discrepancies.
 
 ### Prerequisites
 
@@ -104,16 +105,21 @@ The proofs for the system are organized into two directories:
 - `quick_coq_rcd`: Proofs for the extended system with records (Section 4).
 
 
-We list the *key definitions* and the *paper-to-proof correspondence*, and describe the differences between the formalization and the paper in the **Additional Information** section below for reference. To evaluate the proofs, run:
+We list the *key definitions* and the *paper-to-proof correspondence*, and describe the differences between the formalization and the paper in the **Additional Information** section below for reference. To evaluate the proofs, ensure all intermediate files are cleaned before running `make`.
 ```bash
 # Main system proofs:
 cd quick_coq
+make clean
 make
 
 # Extended system proofs:
 cd quick_coq_rcd
+make clean
 make
 ```
+
+> Important Note for VM Users:
+> The pre-built VM includes proofs that have been pre-compiled for faster access in `coqide`. To recompile the proofs and perform full sanity checks, execute `make clean` before running `make`.
 
 ### Step 2: Checking Axioms and Assumptions of Coq Proofs
 
@@ -186,23 +192,7 @@ We also prepare several recursive type pattern generators (described in the Appe
 
 The structure of the OCaml implementation can be found in the **Additional Information** section below.
 
-To evaluate the implementation, run the following commands, which correspond to the experiments described in Section 5 of the paper:
-
-```bash
-# Table 1: Time taken for benchmarks with depth 5000 for (1) to (7) and 500 for (8).
-dune exec quicksub_eval -- table1
-
-# Figure 11: Comparison of different works across multiple tests
-dune exec quicksub_eval -- plot1
-
-# Table 2: Runtime results for subtyping record types (depth = 100, width = 1000).
-dune exec quicksub_eval -- table2
-
-# Table 12: Runtime results for different algorithms with varying benchmark sizes.
-dune exec quicksub_eval -- table3
-```
-
-For quicker testing, the default values for depth and timeout are reduced to finish in a reasonable time. For full-scale tests used in the paper, use the following commands:
+To evaluate the implementation and reproduce the results in the paper, you can run the following commands in the `quicksub_eval` directory:
 
 ```bash
 # Full-scale Table 1 benchmark with depth 5000:
@@ -214,14 +204,36 @@ dune exec quicksub_eval -- plot1 --depth1 5000 --max-time 100
 # Full-scale Table 2 runtime results for record types:
 dune exec quicksub_eval -- table2 --depth2 100 --width 1000 --max-time 100
 
-# Full-scale Table 12 benchmark with varying sizes:
+# Full-scale Figure 12 benchmark with varying sizes:
+# The command also tests equi-recursive subtyping, whose results are presented in Figure 9
 dune exec quicksub_eval -- table3 --max-time 100
 ```
 
+**Memory and Timeout Adjustments for Benchmarks:**
 
-The results will be demonstrated in the terminal, and the claims in the paper can be verified by checking that the data align with the performance trends presented in the paper. 
+The performance of computationally intensive benchmarks (e.g., Table 1 and Table 2) can vary significantly depending on the machine configuration. Here a few tips for running the benchmarks:
 
-Note that the overall runtime can vary depending on the machine, and the performance on the virtual machine should be slower than the data presented in the paper. It might be helpful to reduce the preset depth/width of the benchmarks in the virtual machine to avoid timeout or stack overflow, or alternatively, run the evaluation on a local machine for a more accurate comparison. The results in the paper were obtained on a MacBook Pro with a 2 GHz Quad-Core Intel Core i5 processor and 16 GB RAM using the pre-set depth and width values above.
+
+- **Handling Stack Overflow**: For the worst case testing scenario (e.g., Table 1, case (8)), it is possible to encounter a stack overflow error for the equi-recursive subtyping algorithm, as the algorithm is implemented by recursion and also involves a large number of type substitutions. To avoid this, we recommend running the evaluation on a local machine with a larger memory configuration, or adjust the timeout parameter to stop the recursion early, as described below.
+
+- **Timeout Adjustments**: If a benchmark causes a stack overflow, or you do not want to wait for the full runtime, please reduce the `--max-time` parameter to a smaller value (e.g., `10` seconds). For example:
+   ```bash
+   dune exec quicksub_eval -- table2 --depth2 100 --width 1000 --max-time 10
+   ```
+   This adjustment will still produce results consistent with the claims in the paper, as the performance trend is not affected by the timeout parameter.
+
+- **Memory Recommendations**:
+  - For VirtualBox: Allocate at least **12GB of RAM** to the VM to handle large benchmarks.
+  - For local machines: A system with **16GB RAM** or more is recommended for full-scale tests. For benchmarks with larger parameters (e.g., `--depth1 5000`), we **recommend running the evaluation on a local machine** to avoid VM-related slowdowns.
+  
+- **Type Size Adjustment**: If your machine cannot handle the full-scale benchmarks, you can reduce the depth and width of the types in the benchmarks. It should still be possible to observe a similar performance trend as described in the paper. For example, you can reduce the depth to 50 and width to 100 for Table 2:
+   ```bash
+   dune exec quicksub_eval -- table2 --depth2 50 --width 100 --max-time 100
+   ```
+
+Note that the overall runtime can vary depending on the machine, and the performance on the virtual machine should be slower than the data presented in the paper. It might be helpful to adopt the above strategies to obtain the results within a VM in a reasonable time frame, or alternatively, run the evaluation on a local machine for a more accurate comparison. 
+
+The results in the paper were obtained on a MacBook Pro with a 2 GHz Quad-Core Intel Core i5 processor and 16 GB RAM using the pre-set depth and width values above.
 
 
 ## Additional Information
@@ -242,7 +254,9 @@ Note that there are a few differences in the formalization compared to the paper
 
 To justify the two changes above, we formalize another relation, which has the precise correspondence to the paper version of the rules, as  `Sub2` in `AltRules.v`, and prove it to be equivalent to the `Sub` relation (assuming types and environments are well-formed) in `AltRules.v`
 
-The weakly positive restriction and subtyping relations in `quick_coq` are directly adapted from [Zhou et al. 2022]'s [formalization](https://github.com/juda/Iso-Recursive-Subtyping/blob/3ca34c6f0c157ba085d873952d8babdbfe6b0f61/Journal/src/AmberBase.v#L77-L129). In the `quick_coq_rcd` proof we drop the subtyping relation, and extend the weakly positive restriction to consider equivalent types up to record permutation.
+The weakly positive restriction and subtyping relations in `quick_coq` are directly adapted from [Zhou et al. 2022]'s [formalization](https://github.com/juda/Iso-Recursive-Subtyping/blob/3ca34c6f0c157ba085d873952d8babdbfe6b0f61/Journal/src/AmberBase.v#L77-L129). Note that the formalization is presented differently from the paper for convenience of proof, but the definitions are equivalent. A detailed justification can be found in Section 7.3 of the prior work ([Revisiting Iso-Recursive Subtyping TOPLAS'22](https://dl.acm.org/doi/10.1145/3549537)) that presents the weakly positive rule.
+
+In the `quick_coq_rcd` proof we drop the subtyping relation, and extend the weakly positive restriction to consider equivalent types up to record permutation.
 
 
 ### Paper to Proof Table
@@ -297,3 +311,37 @@ The OCaml implementation is structured as follows:
     ├── testGen.ml      # The recursive type pattern generators
     └── tests.ml        # Scripts for testing
 ```
+
+
+## Reusability Notes
+
+### Licensing
+
+This artifact is released under the MIT License. This license allows for open-source usage, modification, and distribution of the provided source code. For detailed terms, see the LICENSE file included in this repository.
+
+The MIT License permits:
+
+- Use of the artifact for both personal and commercial purposes.
+- Modification and redistribution under the same license.
+- Attribution to the original authors when redistributing.
+
+If you have questions regarding the licensing or require additional permissions, please contact the authors.
+
+
+### Code Extensibility
+
+The OCaml implementation in `quicksub_eval` is structured for extensibility, allowing researchers to adapt and extend the subtyping algorithms provided. Key components include:
+
+- `defs.ml`: Definitions of types and utility functions used across the implementation.
+- Modular subtyping implementations (e.g., `quickSubOpt.ml`, `amberSub.ml`).
+- Test generators (`testGen.ml`) to evaluate the performance under various recursive type patterns.
+- You can also play with the algorithm in `dune utop` by loading the modules above and interactively testing the subtyping algorithms using your own defined types (by constructing the types using the provided constructors in `Defs` module).
+
+For a detailed description of each module, please refer to the in-code comments.
+
+We also encourage researchers to extend the Coq proofs in `quicksub_coq` to cover additional subtyping algorithms or extensions to the `QuickSub` algorithm. Our formalization shares a similar infrastructure with the following projects:
+
+- Revisiting Iso-Recursive Subtyping: [GitHub](https://github.com/juda/Iso-Recursive-Subtyping)
+- A Calculus with Recursive Types, Record Concatenation and Subtyping: [Zenodo](https://doi.org/10.5281/zenodo.7003284)
+- Recursive Subtyping for All: [GitHub](https://github.com/juda/Recursive-Subtyping-for-All)
+- Full Iso-Recursive Types: [GitHub](https://github.com/ltzone/Full-Iso-Recursive-Types)
