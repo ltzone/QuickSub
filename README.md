@@ -6,7 +6,7 @@ The artifact accompanying the paper *QuickSub: Efficient Iso-Recursive Subtyping
 
 ## List of Claims
 
-- **Claim 1.** All the theorem statements in Section 3 and 4 of the paper are mechanized and proved in Coq. The proofs will be evaluated in Step 1 and 2 of the evaluation instructions.
+- **Claim 1.** All the theorem statements in Sections 3 and 4 of the paper are mechanized and proved in Coq. The proofs will be evaluated in Step 1 and 2 of the evaluation instructions.
 - **Claim 2.** In Table 1 and Figure 11 of Section 5, we test the asymptotic performance of QuickSub against other subtyping algorithms and claim that QuickSub *generally performs the best across most scenarios* except for reflexive subtyping cases and *demonstrates a linear complexity*. This will be evaluated in Step 3 of the evaluation instructions.
 - **Claim 3.** In Table 2 of Section 5, we evaluate QuickSub on practical record subtyping scenarios and claim that with large widths and moderate depths, QuickSub *outperforms other algorithms*. We further vary the depth and width in Figure 12 to show that QuickSub *scales well* with increasing record sizes and recursive depths. This will be evaluated in Step 3.
 
@@ -78,7 +78,7 @@ The following steps will guide you through setting up the artifact from source. 
 
 ### Sanity Testing
 
-For Coq proofs, by running the `make` command in the `quick_coq` or `quick_coq_rcd` directory, you should see the proofs being built without any errors. The command line output is as follows:
+For Coq proofs, run the `make` command in the `quick_coq` or `quick_coq_rcd` directory. The proofs should build without any errors. The command line output is as follows:
 ```
 coq_makefile -arg '-w -variable-collision,-meta-collision,-require-in-module' -f _CoqProject -o CoqSrc.mk
 COQC Rules.v
@@ -124,9 +124,9 @@ make
 ### Step 2: Checking Axioms and Assumptions of Coq Proofs
 
 
-To verify the axioms that out proofs rely on, you can use `Print Assumptions theorem_name` in Coq, by replacing `theorem_name` with the name of the theorem you want to check in the paper-to-proof table.
+To verify the axioms that our proofs rely on, you can use `Print Assumptions theorem_name` in Coq, by replacing `theorem_name` with the name of the theorem you want to check in the paper-to-proof table.
 
-For example, by adding `Print Assumptions progress.` to the end of `Typesafety.v` and re-run `make`, you will see:
+For example, by adding `Print Assumptions progress.` to the end of `Typesafety.v` and re-running `make`, you will see:
 
 ```coq
 COQC Typesafety.v
@@ -302,7 +302,7 @@ The OCaml implementation is structured as follows:
     |
     ├── amberSub.ml     # The Amber Rules Implementation
     ├── completeSub.ml  # The Ligatti's Complete Subtyping Implementation
-    ├── equiSub.ml      # The equi-recurive subtyping implementation
+    ├── equiSub.ml      # The equi-recursive subtyping implementation
     ├── quickSubExt.ml # The direct implementation QuickSub{} algorithm, which uses functional sets
     ├── quickSubOpt.ml # The slightly optimized QuickSub{} algorithm, which uses imperative boolean arrays for equality variable sets
     ├── nominalSub.ml   # The nominal subtyping implementation
@@ -335,7 +335,7 @@ The OCaml implementation in `quicksub_eval` is structured for extensibility, all
 - `defs.ml`: Definitions of types and utility functions used across the implementation.
 - Modular subtyping implementations (e.g., `quickSubOpt.ml`, `amberSub.ml`).
 - Test generators (`testGen.ml`) to evaluate the performance under various recursive type patterns.
-- You can also play with the algorithm in `dune utop` by loading the modules above and interactively testing the subtyping algorithms using your own defined types (by constructing the types using the provided constructors in `Defs` module).
+- You can experiment with the algorithm interactively using `dune utop`. Load the modules listed above, and test the subtyping algorithms with your own defined types. Use the constructors provided in the `Defs` module to construct these types.
 
 For a detailed description of each module, please refer to the in-code comments.
 
